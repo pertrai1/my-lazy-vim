@@ -1,0 +1,17 @@
+{
+  "extras": [
+    "lazyvim.plugins.extras.ai.copilot",
+    "lazyvim.plugins.extras.ai.copilot-chat",
+    "lazyvim.plugins.extras.editor.neo-tree",
+    "lazyvim.plugins.extras.editor.outline",
+    "lazyvim.plugins.extras.editor.refactoring",
+    "lazyvim.plugins.extras.formatting.prettier",
+    "lazyvim.plugins.extras.lang.typescript",
+    "lazyvim.plugins.extras.linting.eslint"
+  ],
+  "install_version": 8,
+  "news": {
+    "NEWS.md": "10960"
+  },
+  "version": 8
+}
