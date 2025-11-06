@@ -3,4 +3,5 @@
 -- Add any additional options here
 
 -- Enable system clipboard integration
-vim.opt.clipboard = "unnamedplus"
+-- On macOS, use both unnamed and unnamedplus to ensure compatibility
+vim.opt.clipboard = "unnamed,unnamedplus"
