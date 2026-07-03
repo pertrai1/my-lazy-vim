@@ -12,6 +12,7 @@ vim.opt.relativenumber = true -- Relative line numbers for faster jumping
 -- Scrolling behavior
 vim.opt.scrolloff = 8 -- Keep 8 lines visible above/below cursor
 vim.opt.sidescrolloff = 8 -- Keep 8 columns visible left/right of cursor
+vim.opt.smoothscroll = false
 
 -- Undo persistence
 vim.opt.undofile = true -- Save undo history to file
@@ -24,3 +25,8 @@ vim.opt.inccommand = "split" -- Live preview of substitutions in split
 
 -- Splits
 vim.opt.splitkeep = "screen" -- Keep text on screen when splitting
+
+vim.opt.spell = false -- Disable spell checking by default
+
+-- Snacks animation
+vim.g.snacks_animate = false
