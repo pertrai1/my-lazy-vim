@@ -1,25 +1,45 @@
 -- Persistent toggleable terminal — for running MCP servers, agent CLIs,
 -- and tailing logs alongside code without leaving Neovim.
+--
+-- Swapped from toggleterm.nvim to snacks.terminal to test it out.
 return {
-  "akinsho/toggleterm.nvim",
-  version = "*",
+  "folke/snacks.nvim",
   opts = {
-    size = 15,
-    open_mapping = [[<c-\>]],
-    direction = "horizontal",
-    shade_terminals = true,
-    persist_size = true,
-  },
-  keys = function()
-    local keys = {
-      {
-        "<leader>tt",
-        "<cmd>ToggleTerm direction=horizontal<cr>",
-        desc = "Toggle terminal (horizontal)",
+    terminal = {
+      win = {
+        style = "terminal",
       },
-      { "<leader>tv", "<cmd>ToggleTerm direction=vertical size=80<cr>", desc = "Toggle terminal (vertical)" },
-      { "<leader>tf", "<cmd>ToggleTerm direction=float<cr>", desc = "Toggle terminal (float)" },
-    }
-    return keys
-  end,
+    },
+  },
+  keys = {
+    {
+      "<c-\\>",
+      function()
+        Snacks.terminal(nil, { win = { position = "bottom", height = 15 } })
+      end,
+      desc = "Toggle terminal (horizontal)",
+      mode = { "n", "t" },
+    },
+    {
+      "<leader>tt",
+      function()
+        Snacks.terminal(nil, { win = { position = "bottom", height = 15 } })
+      end,
+      desc = "Toggle terminal (horizontal)",
+    },
+    {
+      "<leader>tv",
+      function()
+        Snacks.terminal(nil, { win = { position = "right", width = 80 } })
+      end,
+      desc = "Toggle terminal (vertical)",
+    },
+    {
+      "<leader>tf",
+      function()
+        Snacks.terminal(nil, { win = { position = "float" } })
+      end,
+      desc = "Toggle terminal (float)",
+    },
+  },
 }
