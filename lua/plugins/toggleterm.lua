@@ -5,6 +5,7 @@
 return {
   "folke/snacks.nvim",
   opts = {
+    quickfile = { enabled = true },
     terminal = {
       win = {
         style = "terminal",
@@ -12,6 +13,13 @@ return {
     },
   },
   keys = {
+    {
+      "<leader><space>",
+      function()
+        Snacks.picker.smart()
+      end,
+      desc = "Find Files (smart)",
+    },
     {
       "<c-\\>",
       function()

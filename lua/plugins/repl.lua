@@ -1,15 +1,4 @@
 return {
-  -- Add which-key group definition for REPL
-  {
-    "folke/which-key.nvim",
-    optional = true,
-    opts = {
-      spec = {
-        { "<leader>r", group = "REPL", icon = " " },
-      },
-    },
-  },
-
   -- Sniprun for instant code execution
   {
     "michaelb/sniprun",
@@ -26,18 +15,17 @@ return {
       })
     end,
     keys = {
-      { "<leader>rr", "<Plug>SnipRun", desc = "Run code" },
-      { "<leader>rf", "<Plug>SnipRunOperator", desc = "Run operator" },
-      { "<leader>rr", "<Plug>SnipRun", mode = "v", desc = "Run selection" },
+      { "<leader>rr", "<Plug>SnipRun", desc = "Run Code" },
+      { "<leader>rm", "<Plug>SnipRunOperator", desc = "Run Motion" },
+      { "<leader>rr", "<Plug>SnipRun", mode = "v", desc = "Run Selection" },
     },
   },
 
-  -- Iron.nvim for REPL integration  
+  -- Iron.nvim for REPL integration
   {
     "hkupty/iron.nvim",
     config = function()
-      local iron = require("iron.core")
-      iron.setup({
+      require("iron.core").setup({
         config = {
           scratch_repl = true,
           repl_definition = {
@@ -47,28 +35,77 @@ return {
           },
           repl_open_cmd = require("iron.view").bottom(40),
         },
-        keymaps = {
-          send_motion = "<space>sc",
-          visual_send = "<space>sc",
-          send_file = "<space>sf",
-          send_line = "<space>sl",
-          send_paragraph = "<space>sp",
-          send_until_cursor = "<space>su",
-          send_mark = "<space>sm",
-          mark_motion = "<space>mc",
-          mark_visual = "<space>mc",
-          remove_mark = "<space>md",
-          cr = "<space>s<cr>",
-          interrupt = "<space>s<space>",
-          exit = "<space>sq",
-          clear = "<space>cl",
-        },
         highlight = { italic = true },
       })
     end,
     keys = {
-      { "<leader>rs", "<cmd>IronRepl<cr>", desc = "Start REPL" },
-      { "<leader>rq", "<cmd>IronRestart<cr>", desc = "Restart REPL" },
+      { "<leader>rs", "<cmd>IronRepl<cr>", desc = "Open REPL" },
+      { "<leader>rS", "<cmd>IronRestart<cr>", desc = "Restart REPL" },
+      { "<leader>ro", "<cmd>IronFocus<cr>", desc = "Focus REPL" },
+      {
+        "<leader>rc",
+        function()
+          require("iron.core").run_motion("send_motion")
+        end,
+        desc = "Send Motion",
+      },
+      {
+        "<leader>rc",
+        function()
+          require("iron.core").visual_send()
+        end,
+        mode = "v",
+        desc = "Send Selection",
+      },
+      {
+        "<leader>rf",
+        function()
+          require("iron.core").send_file()
+        end,
+        desc = "Send File",
+      },
+      {
+        "<leader>rl",
+        function()
+          require("iron.core").send_line()
+        end,
+        desc = "Send Line",
+      },
+      {
+        "<leader>rp",
+        function()
+          require("iron.core").send_paragraph()
+        end,
+        desc = "Send Paragraph",
+      },
+      {
+        "<leader>ru",
+        function()
+          require("iron.core").send_until_cursor()
+        end,
+        desc = "Send Until Cursor",
+      },
+      {
+        "<leader>ri",
+        function()
+          require("iron.core").send(nil, string.char(03))
+        end,
+        desc = "Interrupt REPL",
+      },
+      {
+        "<leader>rq",
+        function()
+          require("iron.core").close_repl()
+        end,
+        desc = "Quit REPL",
+      },
+      {
+        "<leader>rx",
+        function()
+          require("iron.core").send(nil, string.char(12))
+        end,
+        desc = "Clear REPL",
+      },
     },
   },
 }
