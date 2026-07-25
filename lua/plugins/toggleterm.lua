@@ -1,7 +1,9 @@
--- Persistent toggleable terminal — for running MCP servers, agent CLIs,
--- and tailing logs alongside code without leaving Neovim.
---
--- Swapped from toggleterm.nvim to snacks.terminal to test it out.
+local function terminal(cmd, opts)
+  return function()
+    Snacks.terminal(cmd, opts)
+  end
+end
+
 return {
   "folke/snacks.nvim",
   opts = {
@@ -22,32 +24,39 @@ return {
     },
     {
       "<c-\\>",
-      function()
-        Snacks.terminal(nil, { win = { position = "bottom", height = 15 } })
-      end,
+      terminal(nil, { count = 1, win = { position = "bottom", height = 15 } }),
       desc = "Toggle terminal (horizontal)",
       mode = { "n", "t" },
     },
     {
       "<leader>tt",
-      function()
-        Snacks.terminal(nil, { win = { position = "bottom", height = 15 } })
-      end,
-      desc = "Toggle terminal (horizontal)",
+      terminal(nil, { count = 1, win = { position = "bottom", height = 15 } }),
+      desc = "Toggle shell terminal",
     },
     {
       "<leader>tv",
-      function()
-        Snacks.terminal(nil, { win = { position = "right", width = 80 } })
-      end,
+      terminal(nil, { count = 2, win = { position = "right", width = 80 } }),
       desc = "Toggle terminal (vertical)",
     },
     {
       "<leader>tf",
-      function()
-        Snacks.terminal(nil, { win = { position = "float" } })
-      end,
+      terminal(nil, { count = 3, win = { position = "float" } }),
       desc = "Toggle terminal (float)",
+    },
+    {
+      "<leader>to",
+      terminal("opencode", { count = 4, win = { position = "right", width = 90 } }),
+      desc = "Toggle opencode terminal",
+    },
+    {
+      "<leader>tl",
+      terminal(nil, { count = 5, win = { position = "bottom", height = 12 } }),
+      desc = "Toggle logs terminal",
+    },
+    {
+      "<leader>tr",
+      terminal(nil, { count = 6, win = { position = "bottom", height = 18 } }),
+      desc = "Toggle REPL terminal",
     },
   },
 }

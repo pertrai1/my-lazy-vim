@@ -9,6 +9,7 @@ return {
           require("smart-splits").move_cursor_left()
         end,
         desc = "Move to left split",
+        mode = { "n", "t" },
       },
       {
         "<C-j>",
@@ -16,6 +17,7 @@ return {
           require("smart-splits").move_cursor_down()
         end,
         desc = "Move to below split",
+        mode = { "n", "t" },
       },
       {
         "<C-k>",
@@ -23,6 +25,7 @@ return {
           require("smart-splits").move_cursor_up()
         end,
         desc = "Move to above split",
+        mode = { "n", "t" },
       },
       {
         "<C-l>",
@@ -30,6 +33,7 @@ return {
           require("smart-splits").move_cursor_right()
         end,
         desc = "Move to right split",
+        mode = { "n", "t" },
       },
       {
         "<A-h>",
@@ -60,6 +64,11 @@ return {
         desc = "Resize split right",
       },
     },
-    opts = {},
+    opts = {
+      at_edge = "stop",
+      default_amount = 5,
+      disable_multiplexer_nav_when_zoomed = true,
+      multiplexer_integration = vim.env.TMUX and "tmux" or nil,
+    },
   },
 }
