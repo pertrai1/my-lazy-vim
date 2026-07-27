@@ -44,6 +44,28 @@ return {
         desc = "Diagnostics loclist",
       },
       {
+        "gr",
+        function()
+          Snacks.picker.lsp_references()
+        end,
+        desc = "References",
+        nowait = true,
+      },
+      {
+        "gI",
+        function()
+          Snacks.picker.lsp_implementations()
+        end,
+        desc = "Implementations",
+      },
+      {
+        "gy",
+        function()
+          Snacks.picker.lsp_type_definitions()
+        end,
+        desc = "Type definition",
+      },
+      {
         "]d",
         function()
           vim.diagnostic.jump({ count = 1, float = true })
