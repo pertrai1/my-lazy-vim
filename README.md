@@ -1,4 +1,368 @@
-# 💤 LazyVim
+# Neovim development environment
 
-A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
-Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
+A personal [LazyVim](https://www.lazyvim.org/) configuration for TypeScript,
+Angular, Python, Git, debugging, tests, REPL-driven development, and local AI
+completion. Tokyo Night is the active colorscheme.
+
+The leader key is `Space`. Press `Space` and wait for WhichKey whenever you
+forget a shortcut.
+
+## Highlights
+
+- Language support for TypeScript, JavaScript, Angular, Python, JSON, Lua, and
+  Git configuration files.
+- LSP navigation, inlay hints, source actions, ESLint fixes, Prettier, and
+  inline diagnostics.
+- Neotest integration for Vitest, Jest, and pytest, including DAP debugging.
+- JavaScript/TypeScript and Python REPLs, plus operator-based code execution.
+- OpenCode for repository-aware AI agent workflows.
+- Private local inline completion through Minuet, llama.cpp, and Qwen Coder.
+- Snacks pickers and terminals, Yazi, Diffview, enhanced quickfix, folding,
+  refactoring, snippets, and structural editing.
+- Split navigation that also works across tmux panes.
+
+## Requirements
+
+Required:
+
+- Neovim 0.11 or newer; this configuration is tested with Neovim 0.12.
+- Git.
+- A C compiler and standard build tools.
+- [ripgrep](https://github.com/BurntSushi/ripgrep) and
+  [fd](https://github.com/sharkdp/fd) for fast searching.
+- Node.js for TypeScript tooling and JavaScript test adapters.
+- Python 3 for Python tooling and tests.
+- A terminal with true-color and Nerd Font support.
+
+Useful optional tools:
+
+- [Yazi](https://yazi-rs.github.io/) for file management.
+- [lazygit](https://github.com/jesseduffield/lazygit) for LazyVim's Git UI.
+- [OpenCode](https://opencode.ai/) for the embedded AI agent.
+- [llama.cpp](https://github.com/ggml-org/llama.cpp) for local inline
+  completion.
+- `pytest`, `vitest`, or `jest` installed in the projects that use them.
+- `deno`, `node`, and `python3` for SnipRun and Iron REPL workflows.
+- A Rust toolchain to build SnipRun on macOS.
+
+Mason installs most language servers, formatters, linters, and debug adapters
+when their corresponding LazyVim extras are active.
+
+## Installation
+
+On macOS, Homebrew can install the main external dependencies:
+
+```bash
+brew install neovim git ripgrep fd node python yazi lazygit llama.cpp
+```
+
+Install a Nerd Font separately and select it in the terminal application. Some
+plugins use Nerd Font glyphs for signs, menus, and status information.
+
+Back up any existing Neovim configuration, then clone this repository as the
+Neovim configuration directory:
+
+```bash
+mv ~/.config/nvim ~/.config/nvim.backup
+git clone https://github.com/pertrai1/my-lazy-vim.git ~/.config/nvim
+nvim
+```
+
+The first launch bootstraps `lazy.nvim` and installs the configured plugins.
+Use these commands inside Neovim if anything needs attention:
+
+```vim
+:Lazy
+:Mason
+:checkhealth
+```
+
+## Everyday navigation
+
+| Key | Action |
+| --- | --- |
+| `<leader><space>` | Smart file picker |
+| `<leader>sg` | Find tracked Git files |
+| `<leader>sG` | Git status picker |
+| `<leader>sd` | Workspace diagnostics |
+| `<leader>sD` | Current-buffer diagnostics |
+| `<leader>sc` | Search this Neovim configuration |
+| `<leader>s:` | Command history |
+| `<leader>s/` | Search history |
+| `<C-h/j/k/l>` | Move across Neovim splits or tmux panes |
+| `<A-h/j/k/l>` | Resize the current split |
+| `<C-d>` / `<C-u>` | Scroll while keeping the cursor centered |
+| `w`, `e`, `b` | Subword-aware motion across camelCase and snake_case |
+| `zR` / `zM` | Open or close all folds |
+| `zK` | Preview a fold, falling back to LSP hover |
+| `<leader>j` | Structurally split or join a syntax node |
+| `<C-s>` | Save from normal, insert, or visual mode |
+
+Use `<leader>hk` to browse all global mappings and `<leader>hb` for mappings
+specific to the current buffer.
+
+## Code intelligence and editing
+
+LSP inlay hints are enabled for TypeScript, JavaScript, and Lua. Diagnostics
+are rendered inline at the cursor without duplicating Neovim's default virtual
+text.
+
+| Key | Action |
+| --- | --- |
+| `gr` | Find references |
+| `gI` | Find implementations |
+| `gy` | Find type definitions |
+| `]d` / `[d` | Next or previous diagnostic |
+| `<leader>cr` | Rename with live preview |
+| `<leader>co` | Organize imports |
+| `<leader>cE` | Apply all ESLint fixes |
+| `<leader>cF` | Apply all source fixes |
+| `<leader>cq` | Put diagnostics in quickfix |
+| `<leader>cl` | Put diagnostics in the location list |
+| `ga` | Change text case |
+| `gA` | Change case through an LSP rename |
+| `<leader>Rs` | Select a refactoring |
+| `<leader>Ri` | Inline a variable |
+| `<leader>Rf` | Extract a function |
+| `<leader>Rx` | Extract a variable |
+| `<leader>P{motion}` | Insert a language-aware debug print |
+
+Visual-mode `J` and `K` move selected lines. `<leader>yp` pastes without
+replacing the current register, and `<leader>yd` deletes into the black-hole
+register.
+
+## Tests
+
+Neotest discovers Vitest, Jest, and Python tests and displays their state
+directly in the buffer. Test mappings use uppercase `T` so the lowercase
+`<leader>t` namespace remains available for terminals.
+
+| Key | Action |
+| --- | --- |
+| `<leader>Tn` | Run the nearest test |
+| `<leader>Tf` | Run the current test file |
+| `<leader>Ta` | Run all tests from the working directory |
+| `<leader>Tl` | Repeat the last test |
+| `<leader>Td` | Debug the nearest test with DAP |
+| `<leader>Ts` | Toggle the test summary |
+| `<leader>To` | Show output for the selected test |
+| `<leader>TO` | Toggle the output panel |
+| `<leader>Tw` | Watch the current test file |
+| `<leader>Tx` | Stop the active test |
+
+Neotest uses the project's own test dependencies. Install the relevant runner
+inside the project, for example:
+
+```bash
+npm install --save-dev vitest
+python3 -m pip install pytest
+```
+
+## Debugging
+
+The DAP UI opens when a debug session starts and closes when it exits.
+JavaScript and TypeScript use the Mason-managed JS debug adapter.
+
+| Key | Action |
+| --- | --- |
+| `<leader>db` | Toggle breakpoint |
+| `<leader>dB` | Set a conditional breakpoint |
+| `<leader>dc` | Start or continue |
+| `<leader>dC` | Run to cursor |
+| `<leader>di` | Step into |
+| `<leader>dO` | Step over |
+| `<leader>do` | Step out |
+| `<leader>dt` | Terminate |
+| `<leader>du` | Toggle DAP UI |
+| `<leader>de` | Evaluate expression or selection |
+| `<leader>dr` | Toggle DAP REPL |
+
+For a test, `<leader>Td` is normally the fastest entry point.
+
+## Terminals and REPLs
+
+| Key | Action |
+| --- | --- |
+| `<C-\>` | Toggle the horizontal shell |
+| `<leader>tt` | Toggle the shell terminal |
+| `<leader>tv` | Toggle a vertical terminal |
+| `<leader>tf` | Toggle a floating terminal |
+| `<leader>tl` | Toggle the logs terminal |
+| `<leader>tr` | Toggle the general REPL terminal |
+| `<leader>rs` | Open the language REPL |
+| `<leader>rS` | Restart the language REPL |
+| `<leader>rl` | Send the current line to the REPL |
+| `<leader>rf` | Send the current file |
+| `<leader>rc` | Send a motion or visual selection |
+| `<leader>rr` | Execute code with SnipRun |
+
+Iron uses `node` for JavaScript, `python3` for Python, and `zsh` for shell
+buffers.
+
+## AI workflow
+
+The AI tools have deliberately separate responsibilities:
+
+- OpenCode is the interactive agent for explanations, repository exploration,
+  implementation, debugging, and multi-file work.
+- Minuet provides small, manually requested inline completions.
+- llama.cpp runs the inline model locally, so source code does not need to be
+  sent to a completion service.
+
+### OpenCode
+
+Install and authenticate the OpenCode CLI before using the embedded interface.
+Provider and Codex authentication are managed by OpenCode rather than this
+Neovim configuration.
+
+| Key | Action |
+| --- | --- |
+| `<leader>ot` | Toggle embedded OpenCode |
+| `<leader>oa` | Ask about the cursor or visual selection |
+| `<leader>o+` | Add the current buffer or selection to the prompt |
+| `<leader>oe` | Explain the current code |
+| `<leader>os` | Open the prompt and command selector |
+| `<leader>on` | Start a new session |
+
+### Local inline completion
+
+The recommended model is Qwen2.5-Coder 1.5B Q8_0. It is small, specialized
+for code, and supports fill-in-the-middle completion.
+
+Start the model on the endpoint expected by Minuet:
+
+```bash
+llama-server \
+  -hf ggml-org/Qwen2.5-Coder-1.5B-Q8_0-GGUF \
+  --port 8012 \
+  --ctx-size 4096 \
+  --cache-reuse 256 \
+  --n-gpu-layers all \
+  --flash-attn on
+```
+
+The first launch downloads the model into llama.cpp's Hugging Face cache.
+Confirm that the server is ready:
+
+```bash
+curl http://127.0.0.1:8012/v1/models
+```
+
+Press `<A-y>` in Insert mode to request a completion. Completion is
+manual-first by design, preventing inference on every keystroke. Minuet sends
+one request with 512 tokens of surrounding context and requests at most 56 new
+tokens. Increase its context to 1024 only if the server remains comfortably
+responsive.
+
+To run the server without occupying a terminal:
+
+```bash
+mkdir -p ~/Library/Logs/llama.cpp
+
+nohup llama-server \
+  -hf ggml-org/Qwen2.5-Coder-1.5B-Q8_0-GGUF \
+  --port 8012 \
+  --ctx-size 4096 \
+  --cache-reuse 256 \
+  --n-gpu-layers all \
+  --flash-attn on \
+  > ~/Library/Logs/llama.cpp/inline.log 2>&1 &
+```
+
+Inspect or stop the background server:
+
+```bash
+tail -f ~/Library/Logs/llama.cpp/inline.log
+pkill -f "llama-server.*--port 8012"
+```
+
+## Files, Git, and project navigation
+
+| Key | Action |
+| --- | --- |
+| `<leader>z` | Open Yazi at the current file |
+| `<leader>zr` | Resume the last Yazi session |
+| `<leader>cw` | Open Yazi in the working directory |
+| `<leader>gdd` | Open Diffview |
+| `<leader>gdc` | Close Diffview |
+| `<leader>gdh` | Show history for the current file |
+| `<leader>gdH` | Show branch history |
+
+LazyVim's Snacks explorer, Git commands, and pickers remain available alongside
+these custom mappings.
+
+## Markdown and snippets
+
+- `<leader>mv` toggles rendered Markdown through Markview.
+- `<leader>Sa` creates a VS Code-style snippet.
+- `<leader>Se` edits an existing snippet.
+
+Personal snippets are stored under the Neovim configuration directory. If a
+newly created snippet does not appear in completion, verify that the custom
+snippet directory is registered with Blink.
+
+## Configuration layout
+
+- `lua/config` contains editor options, global mappings, autocommands, startup,
+  and compatibility shims.
+- `lua/plugins` contains one focused Lazy plugin specification per feature.
+- `lazyvim.json` selects official LazyVim extras.
+- `lazy-lock.json` pins plugin revisions for reproducible installations.
+
+Add new behavior as a focused plugin specification instead of editing
+LazyVim's installed files. Local configuration is merged after LazyVim's
+defaults.
+
+## Maintenance
+
+Useful commands:
+
+```vim
+:Lazy check
+:Lazy update
+:Lazy restore
+:Lazy profile
+:Mason
+:MasonUpdate
+:checkhealth
+```
+
+- Commit `lazy-lock.json` whenever intentionally changing plugin versions.
+- Use `:Lazy restore` to return installed plugins to the committed lockfile.
+- Run `:Lazy profile` before adding eager startup dependencies.
+- Run `:checkhealth` after upgrading Neovim, language runtimes, or Treesitter.
+- Keep external project dependencies such as Vitest and pytest in their
+  respective projects rather than installing them through this configuration.
+
+## Troubleshooting
+
+### Minuet returns no completion
+
+1. Confirm `llama-server` is listening on port `8012`.
+2. Check `curl http://127.0.0.1:8012/v1/models`.
+3. Confirm the loaded model supports Qwen-style FIM tokens.
+4. Inspect `~/Library/Logs/llama.cpp/inline.log` when running in the background.
+5. Open `:Lazy` and confirm `minuet-ai.nvim` loaded after entering Insert mode.
+
+### Tests are not discovered
+
+1. Confirm the matching test runner is installed in the project.
+2. Open a test file and toggle `<leader>Ts`.
+3. Check the project root and test filename conventions.
+4. Inspect `:checkhealth neotest`.
+
+### Language tooling is missing
+
+Open `:Mason`, verify the relevant executable exists, and run `:LspInfo` from
+the affected buffer. Project-local formatters and linters take precedence when
+available.
+
+### A shortcut is unclear or appears overridden
+
+Use `<leader>hk` for the global WhichKey view or run:
+
+```vim
+:verbose nmap <key>
+```
+
+The output shows which configuration or plugin last defined the mapping.

@@ -44,11 +44,6 @@ return {
       desc = "Toggle terminal (float)",
     },
     {
-      "<leader>to",
-      terminal("opencode", { count = 4, win = { position = "right", width = 90 } }),
-      desc = "Toggle opencode terminal",
-    },
-    {
       "<leader>tl",
       terminal(nil, { count = 5, win = { position = "bottom", height = 12 } }),
       desc = "Toggle logs terminal",
