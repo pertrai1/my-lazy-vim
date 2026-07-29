@@ -17,7 +17,8 @@ return {
       { "folke/snacks.nvim", opts = { input = { enabled = true } } },
     },
     opts = {
-      -- Your configuration, if any — see `lua/opencode/config.lua`
+      -- Keep OpenCode as the single agent interface. Codex authentication and
+      -- model selection are managed by the OpenCode CLI/provider configuration.
     },
     init = function()
       -- Required for `opts.auto_reload`
@@ -34,17 +35,10 @@ return {
       {
         "<leader>oa",
         function()
-          require("opencode").ask("@cursor: ")
+          require("opencode").ask("@this: ")
         end,
+        mode = { "n", "v" },
         desc = "Ask about this",
-      },
-      {
-        "<leader>oa",
-        function()
-          require("opencode").ask("@selection: ")
-        end,
-        mode = "v",
-        desc = "Ask about selection",
       },
       {
         "<leader>o+",
@@ -56,7 +50,7 @@ return {
       {
         "<leader>o+",
         function()
-          require("opencode").prompt("@selection", { append = true })
+          require("opencode").prompt("@this", { append = true })
         end,
         mode = "v",
         desc = "Add selection to prompt",
@@ -64,28 +58,29 @@ return {
       {
         "<leader>oe",
         function()
-          require("opencode").prompt("Explain @cursor and its context")
+          require("opencode").prompt("Explain @this and its context")
         end,
+        mode = { "n", "v" },
         desc = "Explain this code",
       },
       {
         "<leader>on",
         function()
-          require("opencode").command("session_new")
+          require("opencode").command("session.new")
         end,
         desc = "New session",
       },
       {
         "<S-C-u>",
         function()
-          require("opencode").command("messages_half_page_up")
+          require("opencode").command("session.half.page.up")
         end,
         desc = "Messages half page up",
       },
       {
         "<S-C-d>",
         function()
-          require("opencode").command("messages_half_page_down")
+          require("opencode").command("session.half.page.down")
         end,
         desc = "Messages half page down",
       },
