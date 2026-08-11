@@ -6,7 +6,7 @@ vim.opt.autoread = true -- Automatically reload files changed outside of Neovim
 
 -- Enable system clipboard integration
 -- On macOS, use both unnamed and unnamedplus to ensure compatibility
-vim.opt.clipboard = "unnamed,unnamedplus"
+vim.opt.clipboard = "unnamedplus"
 
 -- Line numbers
 vim.opt.relativenumber = true -- Relative line numbers for faster jumping
@@ -21,7 +21,8 @@ vim.opt.undofile = true -- Save undo history to file
 
 -- Performance
 vim.opt.updatetime = 250 -- Faster CursorHold events (default 4000ms)
-
+-- Give more time for <leader> mappings (LazyVim default is fast).
+vim.opt.timeoutlen = 1000
 -- Search and substitution
 vim.opt.inccommand = "split" -- Live preview of substitutions in split
 
