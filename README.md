@@ -19,6 +19,8 @@ forget a shortcut.
 - Private local inline completion through Minuet, llama.cpp, and Qwen Coder.
 - Snacks pickers and terminals, Yazi, Diffview, enhanced quickfix, folding,
   refactoring, snippets, and structural editing.
+- Code quality tooling: SonarQube Connected Mode with per-repository
+  credentials, line coverage in the gutter, and copy/paste detection.
 - Split navigation that also works across tmux panes.
 
 ## Requirements
@@ -41,6 +43,8 @@ Useful optional tools:
 - [OpenCode](https://opencode.ai/) for the embedded AI agent.
 - [llama.cpp](https://github.com/ggml-org/llama.cpp) for local inline
   completion.
+- A JDK 17 or newer for SonarQube for IDE; the language server is a JVM
+  process. `brew install --cask temurin@21` or `brew install openjdk@21`.
 - `pytest`, `vitest`, or `jest` installed in the projects that use them.
 - `deno`, `node`, and `python3` for SnipRun and Iron REPL workflows.
 - A Rust toolchain to build SnipRun on macOS.
@@ -157,6 +161,68 @@ inside the project, for example:
 npm install --save-dev vitest
 python3 -m pip install pytest
 ```
+
+## Code quality
+
+Three tools cover analysis, coverage, and duplication. All of them work in any
+repository; anything project-specific lives in the repository itself rather
+than in this configuration. See [CODE-QUALITY.md](CODE-QUALITY.md) for the
+per-repository files, setup steps, and design notes.
+
+### SonarQube for IDE
+
+Runs the SonarLint language server for JavaScript, TypeScript, Python, and
+HTML. In Connected Mode it uses the rules, quality profile, and issue status
+from a SonarQube Server or SonarQube Cloud project. Without a binding it still
+runs standalone with default rules.
+
+| Key | Action |
+| --- | --- |
+| `<leader>csi` | Install the SonarQube language server |
+| `<leader>csc` | Show Connected Mode status for this repository |
+| `<leader>csr` | List all active rules |
+
+Diagnostics are prefixed with Sonar's own severity, for example
+`[MEDIUM] Remove this useless assignment`, because LSP has only four severity
+levels and every Sonar issue would otherwise arrive as a plain warning.
+`HIGH` and `BLOCKER` are raised to error.
+
+Run `<leader>csc` first whenever something looks wrong; it reports the resolved
+binding and whether the language server is actually running.
+
+### Coverage
+
+Line coverage is read from whatever report the project's test tooling already
+writes, and is shown in the sign column: green for covered, red for uncovered,
+purple for partial. The report loads automatically when a supported file is
+opened in a repository that has one.
+
+| Key | Action |
+| --- | --- |
+| `<leader>Tc` | Load the report and show the gutter |
+| `<leader>Tu` | Toggle the gutter |
+| `<leader>TC` | Per-file coverage summary |
+
+Generate the report with the project's own tooling first, for example
+`npm run test:coverage`, `go test -coverprofile=coverage.out`, or
+`pytest --cov`.
+
+Coverage never comes from SonarQube. SonarQube for IDE does not report
+coverage at all, so these numbers are always local.
+
+### Duplicate code
+
+`jscpd` scans the repository for copy/paste duplication and puts the results in
+the quickfix list, so `]q` and `[q` walk between duplicate blocks.
+
+| Key | Action |
+| --- | --- |
+| `<leader>cu` | Scan code; prose and configuration are excluded |
+| `<leader>cU` | Scan everything, including Markdown, YAML, and JSON |
+
+`:Jscpd` and `:JscpdAll` accept a minimum token count, for example `:Jscpd 100`
+to see only substantial clones. The scan uses a project-local `jscpd` when one
+is installed and otherwise falls back to `npx`, so nothing needs installing.
 
 ## Debugging
 
@@ -356,6 +422,27 @@ Useful commands:
 Open `:Mason`, verify the relevant executable exists, and run `:LspInfo` from
 the affected buffer. Project-local formatters and linters take precedence when
 available.
+
+### SonarQube exits with code 1
+
+The language server is a JVM process and no working JDK was found. macOS ships
+a `/usr/bin/java` stub that exists but fails on any real invocation, which is
+why the failure surfaces as a bare exit code. Install a JDK 17 or newer; the
+configuration finds it even when Homebrew keeps it off `PATH`.
+
+### SonarQube runs but does not use the server's rules
+
+Run `<leader>csc`. If it reports `standalone`, the repository has no resolvable
+binding. If it reports `connected` but the language server is not running, the
+problem is the JDK rather than the binding. See
+[CODE-QUALITY.md](CODE-QUALITY.md).
+
+### The coverage gutter is empty
+
+Either no report exists yet, or every line is covered. Coverage marks covered
+lines as well as uncovered ones, so a fully covered file shows green rather
+than nothing. Run the project's coverage command, then `<leader>Tc`. Test files
+themselves are usually absent from coverage reports and will never show marks.
 
 ### A shortcut is unclear or appears overridden
 
