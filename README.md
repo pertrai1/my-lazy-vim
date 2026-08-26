@@ -17,8 +17,9 @@ forget a shortcut.
 - JavaScript/TypeScript and Python REPLs, plus operator-based code execution.
 - OpenCode for repository-aware AI agent workflows.
 - Private local inline completion through Minuet, llama.cpp, and Qwen Coder.
-- Snacks pickers and terminals, Yazi, Diffview, enhanced quickfix, folding,
-  refactoring, snippets, and structural editing.
+- Snacks pickers and terminals, Yazi, Diffview, Harpoon file marks, Overseer
+  tasks, enhanced quickfix, folding, refactoring, snippets, and structural
+  editing.
 - Code quality tooling: SonarQube Connected Mode with per-repository
   credentials, line coverage in the gutter, and copy/paste detection.
 - Split navigation that also works across tmux panes.
@@ -342,6 +343,19 @@ tail -f ~/Library/Logs/llama.cpp/inline.log
 pkill -f "llama-server.*--port 8012"
 ```
 
+## Tasks and repeatable commands
+
+Overseer gives project commands a first-class home inside Neovim. Use it for
+long-running dev servers, repeatable build steps, lint commands, or any custom
+task templates that belong to a repository.
+
+| Key | Action |
+| --- | --- |
+| `<leader>rt` | Run a task |
+| `<leader>rj` | Select a task action |
+| `<leader>rR` | Rerun the most recent task |
+| `<leader>rv` | Toggle the task list at the bottom |
+
 ## Files, Git, and project navigation
 
 | Key | Action |
@@ -349,6 +363,10 @@ pkill -f "llama-server.*--port 8012"
 | `<leader>z` | Open Yazi at the current file |
 | `<leader>zr` | Resume the last Yazi session |
 | `<leader>cw` | Open Yazi in the working directory |
+| `<leader>ma` | Mark the current file |
+| `<leader>mm` | Open the marked-files menu |
+| `<leader>mj` / `<leader>mk` | Next or previous marked file |
+| `<leader>m1` ... `<leader>m4` | Jump to a specific marked file |
 | `<leader>gdd` | Open Diffview |
 | `<leader>gdc` | Close Diffview |
 | `<leader>gdh` | Show history for the current file |
