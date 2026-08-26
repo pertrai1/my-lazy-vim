@@ -12,6 +12,26 @@ local function rerun_last_task()
   overseer().run_action(tasks[1], "restart")
 end
 
+local function project_dir()
+  if ok and lazyvim.root and lazyvim.root.get then
+    return lazyvim.root.get()
+  end
+  return vim.uv.cwd()
+end
+
+local function run_validation_pipeline()
+  local dir = project_dir()
+  overseer().run_task({ name = "Validation: all", cwd = dir, search_params = { dir = dir } }, function(task, error)
+    if error then
+      vim.notify(error, vim.log.levels.ERROR, { title = "Validation" })
+      return
+    end
+    if not task then
+      vim.notify("No validation pipeline detected for this project", vim.log.levels.WARN, { title = "Validation" })
+    end
+  end)
+end
+
 return {
   {
     "nvim-lualine/lualine.nvim",
@@ -51,6 +71,7 @@ return {
       { "<leader>rt", "<cmd>OverseerRun<cr>", desc = "Run task" },
       { "<leader>rj", "<cmd>OverseerTaskAction<cr>", desc = "Task action" },
       { "<leader>rR", rerun_last_task, desc = "Rerun last task" },
+      { "<leader>rV", run_validation_pipeline, desc = "Run validation pipeline" },
       { "<leader>rv", "<cmd>OverseerToggle bottom<cr>", desc = "View task list" },
     },
     opts = {

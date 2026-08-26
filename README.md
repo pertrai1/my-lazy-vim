@@ -14,6 +14,8 @@ forget a shortcut.
 - LSP navigation, inlay hints, source actions, ESLint fixes, Prettier, and
   inline diagnostics.
 - Neotest integration for Vitest, Jest, and pytest, including DAP debugging.
+- Project-aware Overseer validation pipelines for OpenSpec, lint, typecheck,
+  tests, and agent verification tasks when a repository exposes them.
 - JavaScript/TypeScript and Python REPLs, plus operator-based code execution.
 - OpenCode for repository-aware AI agent workflows.
 - Private local inline completion through Minuet, llama.cpp, and Qwen Coder.
@@ -210,6 +212,30 @@ Generate the report with the project's own tooling first, for example
 
 Coverage never comes from SonarQube. SonarQube for IDE does not report
 coverage at all, so these numbers are always local.
+
+## Validation pipelines
+
+Overseer now discovers project-local validation tasks so LLM-produced changes can
+be checked with repeatable commands instead of ad-hoc terminal history. It will
+surface tasks for repositories that expose any of these checks:
+
+- `openspec/` → `npx @fission-ai/openspec validate --all --no-interactive`
+- `package.json` scripts such as `lint`, `typecheck`, `test`, or `jscpd`
+- Python repositories with explicit pytest configuration or dependencies
+- `./.agents/bin/verify` when agent-directives generated it
+
+Overseer also creates a combined `Validation: all` pipeline. It runs the
+available checks sequentially, but it is fail-fast because Overseer's
+orchestrator stops when an earlier validation fails or is canceled.
+
+| Key | Action |
+| --- | --- |
+| `<leader>rV` | Run the combined validation pipeline for the current project |
+| `<leader>rt` | Choose any task manually, including individual validation steps |
+| `<leader>rv` | Open the task list/output pane |
+
+These tasks are project-aware, so different repositories can expose different
+validation menus without changing this Neovim config.
 
 ### Duplicate code
 
