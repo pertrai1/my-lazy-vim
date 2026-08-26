@@ -13,9 +13,8 @@ local function rerun_last_task()
 end
 
 local function project_dir()
-  local ok, lazyvim = pcall(require, "lazyvim.util")
-  if ok and lazyvim.root and lazyvim.root.cwd then
-    return lazyvim.root.cwd()
+  if ok and lazyvim.root and lazyvim.root.get then
+    return lazyvim.root.get()
   end
   return vim.uv.cwd()
 end

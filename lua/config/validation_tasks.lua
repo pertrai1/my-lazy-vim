@@ -131,7 +131,10 @@ local function has_pytest_dependency(text)
     "%[tool%.pytest%.ini_options%]",
     "%[tool:pytest%]",
     "pytest[%w%._-]*%s*[><=~!]+",
-    "^pytest%s*$",
+    "^pytest[ \t]*[\r\n]",
+    "[\r\n]pytest[ \t]*[\r\n]",
+    "[\r\n]pytest[ \t]*$",
+    "^pytest[ \t]*$"
   }
 
   for _, pattern in ipairs(patterns) do
