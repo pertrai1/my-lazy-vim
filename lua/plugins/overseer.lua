@@ -13,10 +13,7 @@ local function rerun_last_task()
 end
 
 local function project_dir()
-  if ok and lazyvim.root and lazyvim.root.get then
-    return lazyvim.root.get()
-  end
-  return vim.uv.cwd()
+  return LazyVim.root.get()
 end
 
 local function run_validation_pipeline()

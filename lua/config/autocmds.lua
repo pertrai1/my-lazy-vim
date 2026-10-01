@@ -8,6 +8,9 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 --
 
+-- Register jscpd shortcuts after LazyVim sets the leader key.
+require("config.jscpd").setup()
+
 -- Hide relative line numbers while inserting
 vim.api.nvim_create_autocmd("InsertEnter", {
   callback = function()
