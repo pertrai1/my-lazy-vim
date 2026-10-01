@@ -43,7 +43,7 @@ Useful optional tools:
 
 - [Yazi](https://yazi-rs.github.io/) for file management.
 - [lazygit](https://github.com/jesseduffield/lazygit) for LazyVim's Git UI.
-- [OpenCode](https://opencode.ai/) for the embedded AI agent.
+- [OpenCode v2](https://opencode.ai/) for the embedded AI agent.
 - [llama.cpp](https://github.com/ggml-org/llama.cpp) for local inline
   completion.
 - A JDK 17 or newer for SonarQube for IDE; the language server is a JVM
@@ -304,18 +304,23 @@ The AI tools have deliberately separate responsibilities:
 
 ### OpenCode
 
-Install and authenticate the OpenCode CLI before using the embedded interface.
+Install and authenticate the OpenCode v2 CLI before using the embedded
+interface. The Neovim integration tracks the plugin's `main` branch, which
+supports OpenCode v2.
 Provider and Codex authentication are managed by OpenCode rather than this
 Neovim configuration.
 
 | Key | Action |
 | --- | --- |
-| `<leader>ot` | Toggle embedded OpenCode |
+| `<leader>ot` | Toggle the OpenCode TUI in a right-hand terminal |
 | `<leader>oa` | Ask about the cursor or visual selection |
-| `<leader>o+` | Add the current buffer or selection to the prompt |
-| `<leader>oe` | Explain the current code |
-| `<leader>os` | Open the prompt and command selector |
-| `<leader>on` | Start a new session |
+| `<leader>o+` | Open Ask with the current buffer or selection as context |
+| `<leader>oe` | Send an explanation prompt about the current code |
+| `<leader>os` | Select an OpenCode prompt or registered command |
+
+OpenCode v2's Neovim API can send prompts and run registered commands, but it
+does not expose controls for creating sessions, appending to the TUI's prompt,
+or scrolling its messages. Use the OpenCode TUI (`<leader>ot`) for those actions.
 
 ### Local inline completion
 

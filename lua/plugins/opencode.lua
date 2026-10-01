@@ -12,8 +12,10 @@ return {
 
   {
     "NickvanDyke/opencode.nvim",
+    -- The main branch targets OpenCode v2; stable releases currently target v1.
+    branch = "main",
     dependencies = {
-      -- Recommended for `ask()`, and required for `toggle()` — otherwise optional
+      -- Enhances Ask input and provides the terminal for OpenCode's V2 TUI.
       { "folke/snacks.nvim", opts = { input = { enabled = true } } },
     },
     opts = {
@@ -28,9 +30,11 @@ return {
       {
         "<leader>ot",
         function()
-          require("opencode").toggle()
+          require("snacks.terminal").toggle("opencode", {
+            win = { position = "right", width = 80 },
+          })
         end,
-        desc = "Toggle embedded",
+        desc = "Toggle OpenCode TUI",
       },
       {
         "<leader>oa",
@@ -43,17 +47,17 @@ return {
       {
         "<leader>o+",
         function()
-          require("opencode").prompt("@buffer", { append = true })
+          require("opencode").ask("@buffer: ")
         end,
-        desc = "Add buffer to prompt",
+        desc = "Ask with buffer",
       },
       {
         "<leader>o+",
         function()
-          require("opencode").prompt("@this", { append = true })
+          require("opencode").ask("@this: ")
         end,
         mode = "v",
-        desc = "Add selection to prompt",
+        desc = "Ask with selection",
       },
       {
         "<leader>oe",
@@ -64,33 +68,12 @@ return {
         desc = "Explain this code",
       },
       {
-        "<leader>on",
-        function()
-          require("opencode").command("session.new")
-        end,
-        desc = "New session",
-      },
-      {
-        "<S-C-u>",
-        function()
-          require("opencode").command("session.half.page.up")
-        end,
-        desc = "Messages half page up",
-      },
-      {
-        "<S-C-d>",
-        function()
-          require("opencode").command("session.half.page.down")
-        end,
-        desc = "Messages half page down",
-      },
-      {
         "<leader>os",
         function()
           require("opencode").select()
         end,
         mode = { "n", "v" },
-        desc = "Select prompt",
+        desc = "Select prompt or command",
       },
     },
   },
