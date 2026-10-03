@@ -148,6 +148,23 @@ Visual-mode `J` and `K` move selected lines. `<leader>yp` pastes without
 replacing the current register, and `<leader>yd` deletes into the black-hole
 register.
 
+### Multi-cursor editing
+
+Multi-cursor actions work in the current buffer in normal or visual mode.
+Use LSP rename (`<leader>cr`) when a symbol needs a semantic cross-file rename.
+
+| Key | Action |
+| --- | --- |
+| `<C-n>` | Add a cursor at the next matching word or selection |
+| `<leader>Ms` | Skip the next match |
+| `<leader>Ma` | Add cursors to all matches in the buffer |
+| `<leader>Mj` / `<leader>Mk` | Add a cursor on the line below / above |
+| `<leader>Mc` | Clear all extra cursors |
+
+Press `<Esc>` in normal mode to clear extra cursors. From insert mode, press
+`<Esc>` once to finish the edit, then again to clear them. If cursors are
+temporarily disabled, `<Esc>` re-enables them first.
+
 ## Tests
 
 Neotest discovers Vitest, Jest, and Python tests and displays their state
