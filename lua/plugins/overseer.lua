@@ -83,4 +83,24 @@ return {
       },
     },
   },
+  {
+    "mfussenegger/nvim-dap",
+    optional = true,
+    opts = function()
+      require("overseer").enable_dap()
+    end,
+  },
+  {
+    "folke/edgy.nvim",
+    optional = true,
+    opts = function(_, opts)
+      table.insert(opts.bottom, {
+        title = "Overseer",
+        ft = "OverseerList",
+        open = function()
+          require("overseer").open({ direction = "bottom" })
+        end,
+      })
+    end,
+  },
 }

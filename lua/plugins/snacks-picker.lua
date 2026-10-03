@@ -2,20 +2,6 @@ return {
   "folke/snacks.nvim",
   keys = {
     {
-      "<leader>sg",
-      function()
-        Snacks.picker.git_files()
-      end,
-      desc = "Find git files",
-    },
-    {
-      "<leader>sG",
-      function()
-        Snacks.picker.git_status()
-      end,
-      desc = "Git status",
-    },
-    {
       "<leader>sd",
       function()
         Snacks.picker.diagnostics()

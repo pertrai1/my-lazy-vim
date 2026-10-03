@@ -523,7 +523,7 @@ return {
     optional = true,
     opts = {
       spec = {
-        { "<leader>cs", group = "SonarQube", icon = " " },
+        { "<leader>cQ", group = "SonarQube", icon = " " },
       },
     },
   },
@@ -543,9 +543,9 @@ return {
     -- say, a README would fail with E492.
     cmd = { "SonarQubeConnectedStatus", "SonarQubeInstallLsp" },
     keys = {
-      { "<leader>csi", "<cmd>SonarQubeInstallLsp<cr>", desc = "Install SonarQube LSP" },
-      { "<leader>csc", "<cmd>SonarQubeConnectedStatus<cr>", desc = "SonarQube connected status" },
-      { "<leader>csr", "<cmd>SonarQubeListAllRules<cr>", desc = "List SonarQube rules" },
+      { "<leader>cQi", "<cmd>SonarQubeInstallLsp<cr>", desc = "Install SonarQube LSP" },
+      { "<leader>cQc", "<cmd>SonarQubeConnectedStatus<cr>", desc = "SonarQube connected status" },
+      { "<leader>cQr", "<cmd>SonarQubeListAllRules<cr>", desc = "List SonarQube rules" },
     },
     config = function()
       -- Resolve against the buffer that triggered the ft load; lazy.nvim fires

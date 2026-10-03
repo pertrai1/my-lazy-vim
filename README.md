@@ -89,8 +89,12 @@ Use these commands inside Neovim if anything needs attention:
 | Key | Action |
 | --- | --- |
 | `<leader><space>` | Smart file picker |
-| `<leader>sg` | Find tracked Git files |
-| `<leader>sG` | Git status picker |
+| `<leader>sg` | Search text in the project root |
+| `<leader>sG` | Search text in the working directory |
+| `<leader>sr` | Search and replace files with the current file type preselected |
+| `<leader>sF` | Search and replace across all file types |
+| `<leader>fg` | Find tracked Git files |
+| `<leader>gs` | Git status picker |
 | `<leader>sd` | Workspace diagnostics |
 | `<leader>sD` | Current-buffer diagnostics |
 | `<leader>sc` | Search this Neovim configuration |
@@ -107,6 +111,12 @@ Use these commands inside Neovim if anything needs attention:
 
 Use `<leader>hk` to browse all global mappings and `<leader>hb` for mappings
 specific to the current buffer.
+
+Edgy keeps the Neotest summary on the left and Aerial symbols and Grug Far on
+the right. Diagnostics, test output, Overseer tasks, and bottom terminals share
+the bottom panel. `<leader>cs` toggles Aerial; `<leader>ue` toggles the Edgy
+panels and `<leader>uE` selects one. DAP UI continues to manage its own debug
+windows when a debug session starts.
 
 ## Code intelligence and editing
 
@@ -181,16 +191,16 @@ runs standalone with default rules.
 
 | Key | Action |
 | --- | --- |
-| `<leader>csi` | Install the SonarQube language server |
-| `<leader>csc` | Show Connected Mode status for this repository |
-| `<leader>csr` | List all active rules |
+| `<leader>cQi` | Install the SonarQube language server |
+| `<leader>cQc` | Show Connected Mode status for this repository |
+| `<leader>cQr` | List all active rules |
 
 Diagnostics are prefixed with Sonar's own severity, for example
 `[MEDIUM] Remove this useless assignment`, because LSP has only four severity
 levels and every Sonar issue would otherwise arrive as a plain warning.
 `HIGH` and `BLOCKER` are raised to error.
 
-Run `<leader>csc` first whenever something looks wrong; it reports the resolved
+Run `<leader>cQc` first whenever something looks wrong; it reports the resolved
 binding and whether the language server is actually running.
 
 ### Coverage
@@ -255,6 +265,12 @@ is installed and otherwise falls back to `npx`, so nothing needs installing.
 
 The DAP UI opens when a debug session starts and closes when it exits.
 JavaScript and TypeScript use the Mason-managed JS debug adapter.
+Overseer runs `preLaunchTask` before a DAP session and `postDebugTask` after
+it ends when those fields are present in a project's `.vscode/launch.json`.
+Define the named tasks in that project's `.vscode/tasks.json` (or as Overseer
+task templates); a failing preparation task prevents the debugger from starting.
+Project-specific build and server commands belong in the project, not this
+Neovim configuration.
 
 | Key | Action |
 | --- | --- |
@@ -481,7 +497,7 @@ configuration finds it even when Homebrew keeps it off `PATH`.
 
 ### SonarQube runs but does not use the server's rules
 
-Run `<leader>csc`. If it reports `standalone`, the repository has no resolvable
+Run `<leader>cQc`. If it reports `standalone`, the repository has no resolvable
 binding. If it reports `connected` but the language server is not running, the
 problem is the JDK rather than the binding. See
 [CODE-QUALITY.md](CODE-QUALITY.md).
