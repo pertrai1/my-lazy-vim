@@ -210,6 +210,8 @@ local function aggregate_task(root, tasks)
       for _, template in ipairs(child_templates) do
         table.insert(subtasks, template.builder())
       end
+      local timeout = vim.g.validation_timeout or 600
+      local grace = vim.g.validation_timeout_grace or 30
       return {
         name = "Validation: all",
         cwd = root,
@@ -218,8 +220,8 @@ local function aggregate_task(root, tasks)
           tasks = subtasks,
         },
         -- A command that cannot start never reaches the leaf's on_start timer.
-        -- Bound the aggregate too, with enough time for every sequential step.
-        components = { "default", { "timeout", timeout = (vim.g.validation_timeout or 600) * #child_templates } },
+        -- Reserve extra startup/transition time without shortening leaf budgets.
+        components = { "default", { "timeout", timeout = (timeout + grace) * #child_templates } },
         metadata = { category = "validation-all" },
       }
     end,

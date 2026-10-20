@@ -95,7 +95,7 @@ local function run()
     assert(vim.fn.setfperm(root .. "/.agents/bin/verify", "rwx------") == 1)
     local aggregate = assert(task(root, "Validation: all"))
     equal("orchestrator", aggregate.strategy[1])
-    equal({ "default", { "timeout", timeout = 600 * 7 } }, aggregate.components)
+    equal({ "default", { "timeout", timeout = (600 + 30) * 7 } }, aggregate.components)
     local categories = {}
     for _, child in ipairs(aggregate.strategy.tasks) do
       table.insert(categories, child.metadata.category)
@@ -111,8 +111,21 @@ local function run()
     local root = project({ test = "custom" })
     equal(1800, task(root, "Validation: test").components[2].timeout)
     equal(1800, task(root, "Validation: all").strategy.tasks[1].components[2].timeout)
-    equal(1800, task(root, "Validation: all").components[2].timeout)
+    equal(1830, task(root, "Validation: all").components[2].timeout)
     vim.g.validation_timeout = nil
+  end)
+
+  test("aggregate startup grace is configurable without changing leaf limits", function()
+    vim.g.validation_timeout = 1
+    vim.g.validation_timeout_grace = 2
+    local root = project({ test = "custom", jscpd = "custom" })
+    local aggregate = task(root, "Validation: all")
+    equal(6, aggregate.components[2].timeout)
+    for _, child in ipairs(aggregate.strategy.tasks) do
+      equal(1, child.components[2].timeout)
+    end
+    vim.g.validation_timeout = nil
+    vim.g.validation_timeout_grace = nil
   end)
 
   test("does not invent a test task or pipeline", function()

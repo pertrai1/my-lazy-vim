@@ -92,6 +92,28 @@ local function run()
   print("ok - a failing test stops the pipeline before later steps")
 
   vim.g.validation_timeout = 1
+  vim.g.validation_timeout_grace = 1
+  package.preload["overseer.component.test_startup_delay"] = function()
+    return {
+      constructor = function()
+        return {
+          on_pre_start = function()
+            -- Model startup/transition work outside each child's timeout.
+            vim.uv.sleep(750)
+            vim.uv.update_time()
+          end,
+        }
+      end,
+    }
+  end
+  pipeline({ test = finite, jscpd = after }, "SUCCESS", false, function(definition)
+    for _, child in ipairs(definition.strategy.tasks) do
+      child.cmd = { "node", "-e", "setTimeout(() => {}, 750)" }
+      table.insert(child.components, "test_startup_delay")
+    end
+  end)
+  print("ok - startup overhead does not consume the sequential checks' per-step allowance")
+
   local canceled = pipeline({ test = watch, jscpd = after }, "CANCELED", false)
   local child_ids = canceled.strategy.tasks
   assert(overseer.list_tasks()[1], "Expected Overseer task state")
@@ -115,4 +137,4 @@ if not ok then
   io.stderr:write(err .. "\n")
   vim.cmd("cquit 1")
 end
-print("6 pinned-plugin integration checks passed")
+print("7 pinned-plugin integration checks passed")

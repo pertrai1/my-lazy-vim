@@ -272,8 +272,12 @@ in `lua/config/options.lua`, for example:
 vim.g.validation_timeout = 1800 -- 30 minutes per validation step
 ```
 
-The aggregate also has a total deadline of the per-step timeout multiplied by
-the number of steps, so even a command that cannot start cannot strand it.
+The aggregate also has a total deadline of `(per-step timeout + startup grace)
+× number of steps`, so even a command that cannot start cannot strand it.
+Startup grace defaults to 30 seconds per step, keeping orchestration overhead
+out of the checks' execution allowance. For unusually slow startup, set
+`vim.g.validation_timeout_grace` to a larger positive integer number of seconds.
+This only increases the aggregate safety deadline, not individual step limits.
 
 | Key | Action |
 | --- | --- |
