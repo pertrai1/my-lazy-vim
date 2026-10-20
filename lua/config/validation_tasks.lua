@@ -5,7 +5,7 @@ local uv = vim.uv or vim.loop
 local SCRIPT_CANDIDATES = {
   { category = "lint", names = { "lint", "check:lint", "lint:check", "lint:all" } },
   { category = "typecheck", names = { "typecheck", "type-check", "check-types", "check:typecheck" } },
-  { category = "test", names = { "test", "test:unit", "unit:test", "test:ci" } },
+  { category = "test", names = { "test:ci", "test:run", "test", "test:unit", "unit:test" } },
   { category = "jscpd", names = { "jscpd", "check:duplication", "duplication:check" } },
 }
 
@@ -68,7 +68,7 @@ local function command_with_args(parts, extra)
   return cmd
 end
 
-local function task_definition(name, root, cmd, metadata)
+local function task_definition(name, root, cmd, metadata, env)
   return {
     name = name,
     builder = function()
@@ -76,7 +76,10 @@ local function task_definition(name, root, cmd, metadata)
         name = name,
         cmd = cmd,
         cwd = root,
-        components = { "default" },
+        env = env,
+        -- CI mode cannot force arbitrary scripts to exit. Bound every step,
+        -- including project-local wrappers, without rewriting their arguments.
+        components = { "default", { "timeout", timeout = vim.g.validation_timeout or 600 } },
         metadata = metadata or {},
       }
     end,
@@ -103,7 +106,13 @@ local function script_tasks(root, tasks)
     local script = first_script(scripts, candidate.names)
     if script then
       local cmd = command_with_args(runner, { script })
-      table.insert(tasks, task_definition("Validation: " .. candidate.category, root, cmd, { category = candidate.category }))
+      -- Runners such as Vitest honor CI for their default non-watch mode.
+      -- Explicit watch scripts remain bounded by the task timeout.
+      local env = candidate.category == "test" and { CI = "true" } or nil
+      table.insert(
+        tasks,
+        task_definition("Validation: " .. candidate.category, root, cmd, { category = candidate.category }, env)
+      )
     end
   end
 end
@@ -112,12 +121,15 @@ local function openspec_task(root, tasks)
   if not is_dir(path_join(root, "openspec")) then
     return
   end
-  table.insert(tasks, task_definition(
-    "Validation: openspec",
-    root,
-    { "npx", "@fission-ai/openspec", "validate", "--all", "--no-interactive" },
-    { category = "openspec" }
-  ))
+  table.insert(
+    tasks,
+    task_definition(
+      "Validation: openspec",
+      root,
+      { "npx", "@fission-ai/openspec", "validate", "--all", "--no-interactive" },
+      { category = "openspec" }
+    )
+  )
 end
 
 local function has_pytest_dependency(text)
@@ -134,7 +146,7 @@ local function has_pytest_dependency(text)
     "^pytest[ \t]*[\r\n]",
     "[\r\n]pytest[ \t]*[\r\n]",
     "[\r\n]pytest[ \t]*$",
-    "^pytest[ \t]*$"
+    "^pytest[ \t]*$",
   }
 
   for _, pattern in ipairs(patterns) do
@@ -151,7 +163,14 @@ local function pytest_configured(root)
     return true
   end
 
-  for _, filename in ipairs({ "pyproject.toml", "setup.cfg", "tox.ini", "uv.lock", "requirements.txt", "requirements-dev.txt" }) do
+  for _, filename in ipairs({
+    "pyproject.toml",
+    "setup.cfg",
+    "tox.ini",
+    "uv.lock",
+    "requirements.txt",
+    "requirements-dev.txt",
+  }) do
     if has_pytest_dependency(read_text(path_join(root, filename))) then
       return true
     end
@@ -198,7 +217,9 @@ local function aggregate_task(root, tasks)
           "orchestrator",
           tasks = subtasks,
         },
-        components = { "default" },
+        -- A command that cannot start never reaches the leaf's on_start timer.
+        -- Bound the aggregate too, with enough time for every sequential step.
+        components = { "default", { "timeout", timeout = (vim.g.validation_timeout or 600) * #child_templates } },
         metadata = { category = "validation-all" },
       }
     end,

@@ -255,6 +255,26 @@ Overseer also creates a combined `Validation: all` pipeline. It runs the
 available checks sequentially, but it is fail-fast because Overseer's
 orchestrator stops when an earlier validation fails or is canceled.
 
+For JavaScript/TypeScript tests, script preference is `test:ci`, `test:run`,
+`test`, `test:unit`, then `unit:test`. The selected script runs with `CI=true`
+to disable implicit watch mode in runners such as Vitest, without appending
+runner-specific flags to arbitrary scripts. Prefer a dedicated finite script
+such as `"test:run": "vitest run"` if the normal `test` command watches files.
+Use Neotest's `<leader>Tw` when watching is intentional.
+
+Each validation step has a 10-minute safety timeout, including custom scripts
+that ignore `CI` or explicitly enable watch mode. A timeout cancels that step
+and the combined pipeline; it does not count as a passing check, and later
+steps do not run. For longer suites, set a positive integer number of seconds
+in `lua/config/options.lua`, for example:
+
+```lua
+vim.g.validation_timeout = 1800 -- 30 minutes per validation step
+```
+
+The aggregate also has a total deadline of the per-step timeout multiplied by
+the number of steps, so even a command that cannot start cannot strand it.
+
 | Key | Action |
 | --- | --- |
 | `<leader>rV` | Run the combined validation pipeline for the current project |
@@ -462,6 +482,28 @@ LazyVim's installed files. Local configuration is merged after LazyVim's
 defaults.
 
 ## Maintenance
+
+Run the isolated regression checks from this repository's root:
+
+```bash
+nvim --headless -u NONE -l tests/workflow.lua
+```
+
+These checks do not install plugins, start OpenCode, or call an AI provider.
+They cover validation task selection and the OpenCode plugin specification,
+not a full interactive LazyVim session.
+
+To also exercise the real Lazy loader and Overseer success, failure, and
+timeout paths, point the integration check at existing plugins restored to
+`lazy-lock.json` (requires Node.js and npm):
+
+```bash
+LAZYVIM_TEST_PLUGINS="$HOME/.local/share/nvim/lazy" \
+  nvim --headless -u NONE -l tests/integration.lua
+```
+
+The integration check uses temporary local projects and does not send prompts
+or start the OpenCode CLI.
 
 Useful commands:
 
