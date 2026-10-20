@@ -18,12 +18,11 @@ return {
       -- Enhances Ask input and provides the terminal for OpenCode's V2 TUI.
       { "folke/snacks.nvim", opts = { input = { enabled = true } } },
     },
-    opts = {
-      -- Keep OpenCode as the single agent interface. Codex authentication and
-      -- model selection are managed by the OpenCode CLI/provider configuration.
-    },
     init = function()
-      -- Required for `opts.auto_reload`
+      -- This plugin uses vim.g.opencode_opts, not setup(). Leave opts unset so
+      -- lazy.nvim does not try to call a nonexistent setup function.
+      -- Provider authentication and model selection stay in the OpenCode CLI.
+      -- Allow OpenCode file-edit events to reload buffers.
       vim.opt.autoread = true
     end,
     keys = {
