@@ -23,7 +23,8 @@ forget a shortcut.
   tasks, enhanced quickfix, folding, refactoring, snippets, and structural
   editing.
 - Code quality tooling: SonarQube Connected Mode with per-repository
-  credentials, line coverage in the gutter, and copy/paste detection.
+  credentials, optional manual CodeScene checks, line coverage in the gutter,
+  and copy/paste detection.
 - Split navigation that also works across tmux panes.
 
 ## Requirements
@@ -51,6 +52,8 @@ Useful optional tools:
 - `pytest`, `vitest`, or `jest` installed in the projects that use them.
 - `deno`, `node`, and `python3` for SnipRun and Iron REPL workflows.
 - A Rust toolchain to build SnipRun on macOS.
+- The [CodeScene CLI](https://codescene.io/docs/cli/index.html) (`cs`) and its
+  own configured authentication/license, only if you want manual Code Health checks.
 
 Mason installs most language servers, formatters, linters, and debug adapters
 when their corresponding LazyVim extras are active.
@@ -194,10 +197,35 @@ python3 -m pip install pytest
 
 ## Code quality
 
-Three tools cover analysis, coverage, and duplication. All of them work in any
-repository; anything project-specific lives in the repository itself rather
-than in this configuration. See [CODE-QUALITY.md](CODE-QUALITY.md) for the
-per-repository files, setup steps, and design notes.
+Tools cover analysis, coverage, and duplication across repositories, subject
+to each tool's language support. Project-specific settings live in the
+repository itself rather than in this configuration. See
+[CODE-QUALITY.md](CODE-QUALITY.md) for setup steps and design notes.
+
+### CodeScene (optional, manual)
+
+Run `:CodeScene` or `:CodeScene file` to check the saved current file,
+`:CodeScene delta` for saved noncommitted changes in its Git working tree,
+or `:CodeScene staged` for the Git index. Tab completion lists the scopes.
+These commands reuse Overseer. Nothing runs at startup, on save, or as part
+of `Validation: all`, and nothing installs or authenticates automatically.
+
+A reusable output pane opens for the new check, including multiline authentication
+errors, without moving focus from the source buffer. Previous task output remains
+available in Overseer.
+File checks also put recognized findings in quickfix: use `:copen`, `]q`, and
+`[q`. Delta/staged output stays in Overseer, preserving improvements and
+explanations. No inline/LSP diagnostics are added.
+
+Use `<leader>rv` to reopen tasks and `<leader>rj` to select a task's `stop`
+action. Checks time out after five minutes by default. A task's `SUCCESS`
+means the CLI exited zero, not necessarily that the code is clean: normal
+`cs delta` can report findings with exit zero. Always read the output.
+
+CodeScene supports TypeScript/JavaScript and C#, among other languages, but
+not Lua Code Health. Use it on applications edited with this configuration,
+not to analyze the Lua configuration itself. See
+[CodeScene setup and behavior](CODE-QUALITY.md#codescene-manual-checks).
 
 ### SonarQube for IDE
 
@@ -491,11 +519,12 @@ Run the isolated regression checks from this repository's root:
 
 ```bash
 nvim --headless -u NONE -l tests/workflow.lua
+nvim --headless -u NONE -l tests/codescene.lua
 ```
 
 These checks do not install plugins, start OpenCode, or call an AI provider.
-They cover validation task selection and the OpenCode plugin specification,
-not a full interactive LazyVim session.
+They cover validation task selection, the OpenCode plugin specification, and
+CodeScene command preflight, not a full interactive LazyVim session.
 
 To also exercise the real Lazy loader and Overseer success, failure, and
 timeout paths, point the integration check at existing plugins restored to
@@ -504,10 +533,16 @@ timeout paths, point the integration check at existing plugins restored to
 ```bash
 LAZYVIM_TEST_PLUGINS="$HOME/.local/share/nvim/lazy" \
   nvim --headless -u NONE -l tests/integration.lua
+LAZYVIM_TEST_PLUGINS="$HOME/.local/share/nvim/lazy" \
+  nvim --headless -u NONE -l tests/codescene-integration.lua
 ```
 
-The integration check uses temporary local projects and does not send prompts
-or start the OpenCode CLI.
+The integration checks use temporary local projects and do not send prompts
+or start the OpenCode CLI. CodeScene tests use a local stub named `cs`, not
+the real service, credentials, or licensed analysis. They cover pinned Lazy
+command loading, output-pane visibility/reuse, quickfix parsing, raw errors,
+exit codes, cancellation, timeouts, and an executable disappearing before task
+startup. Preflight checks include unwritten files beneath symlinked directories.
 
 Useful commands:
 

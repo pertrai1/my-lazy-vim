@@ -1,6 +1,6 @@
 # Code quality tooling
 
-Reference for the SonarQube, coverage, and duplication setup: which files a
+Reference for the CodeScene, SonarQube, coverage, and duplication setup: which files a
 repository needs, where credentials live, and why some of it is built the way
 it is. The keymaps are in [README.md](README.md).
 
@@ -15,6 +15,80 @@ it is. The keymaps are in [README.md](README.md).
 
 Nothing here is configured per repository inside this Neovim configuration.
 Each repository carries its own settings so the same setup works everywhere.
+
+## CodeScene manual checks
+
+CodeScene is an optional CLI integration, separate from SonarQube, LSP,
+OpenCode, and any CodeScene MCP connection. An MCP token or connection does
+not establish that the local CLI is installed, authenticated, or licensed.
+
+1. Install `cs` using the [official CLI instructions](https://codescene.io/docs/cli/index.html).
+2. Follow CodeScene's authentication/license instructions for your account
+   outside Neovim. The integration does not read, display, create, or store
+   credentials itself. The CLI uses its own existing configuration/environment.
+3. Confirm `cs version` works in the environment from which Neovim starts.
+   Neovim must be able to find `cs` on `PATH`.
+
+| Command | Analysis | Scope |
+| --- | --- | --- |
+| `:CodeScene` or `:CodeScene file` | `cs check <absolute-file>` | Saved current file |
+| `:CodeScene delta` | `cs delta` | Saved noncommitted changes in the Git working tree |
+| `:CodeScene staged` | `cs delta --staged` | Staged content only, not unsaved buffers |
+
+File paths are passed as separate arguments, not interpolated into a shell.
+The Git root is resolved from the current normal file, including linked
+worktrees; nested package directories do not change the delta scope. From an
+unnamed or special buffer, delta/staged use the current working directory.
+Git root lookup has a two-second limit. A standalone file can be checked
+outside Git, with its parent directory as the working directory.
+
+File checks refuse unsaved buffers. Delta refuses modified loaded buffers in
+the selected repository rather than silently checking stale disk contents,
+including unwritten files beneath symlinked directories.
+Neither command saves files for you. Staged checks intentionally use the
+index even when a buffer is modified; they never stage anything. Run a new
+`:CodeScene` command after changing projects/files. Overseer's rerun action
+repeats the original command and root without repeating buffer preflight.
+
+Each command opens the new task's full output in a reusable pane in the current
+tab, preserving source focus. It does not depend on which task is selected in
+Overseer. Use `<leader>rv` to view previous tasks and their output. For file checks,
+recognized `Info: file:line: message` and `Warn: file:line: message` entries
+also populate a new quickfix list; unmatched output and stderr remain in the
+task output. This uses the errorformat supplied by `cs docs vim` in CLI
+1.0.54, without its example's automatic read/write hooks. Delta/staged output
+is deliberately not parsed as file diagnostics, and no inline diagnostics
+are published. Quickfix remains a snapshot of the checked saved files. If
+checks overlap, their quickfix lists appear in completion order; use the task
+name/output to identify the result rather than assuming it is the newest run.
+
+Overseer `SUCCESS` means exit zero, not a clean Code Health result. In
+particular, normal `cs delta` reports findings with exit zero. Nonzero exits
+remain `FAILURE`, whether caused by findings or authentication/command errors;
+inspect the raw output to distinguish them. An empty quickfix list is not
+proof that analysis succeeded. Missing authentication and unsupported-language
+messages remain visible instead of being interpreted as clean results.
+
+Lua is explicitly rejected because it lacks Code Health support. Other
+language support is decided by the installed CLI; TypeScript/JavaScript
+(including TSX/JSX) and C# are supported. See the
+[language support table](https://codescene.io/docs/usage/language-support.html).
+
+Checks have a five-minute safety timeout and can be stopped via Overseer task
+actions. Timeout or manual stop is `CANCELED`, never a successful check. To
+allow longer checks, set a positive integer in `lua/config/options.lua`:
+
+```lua
+vim.g.codescene_timeout = 600 -- seconds per manual check
+```
+
+There is no startup/on-save analysis, added mapping, validation-pipeline or
+CI hook, login flow, MCP call, or AI/refactoring request. The integration
+does not change any project CodeScene rules. The command contract and bundled
+Vim format were verified against CLI 1.0.54; tests use synthetic CLI output,
+and real licensed findings have not been validated in this repository.
+
+Reference: [CodeScene command documentation](https://codescene.io/docs/cli/command-reference.html).
 
 ## SonarQube Connected Mode
 
