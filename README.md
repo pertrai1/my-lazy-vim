@@ -120,9 +120,10 @@ windows when a debug session starts.
 
 ## Code intelligence and editing
 
-LSP inlay hints are enabled for TypeScript, JavaScript, and Lua. Diagnostics
-are rendered inline at the cursor without duplicating Neovim's default virtual
-text.
+LSP inlay hints are enabled for Lua. They are currently disabled for TypeScript
+and JavaScript because Neovim's inlay-hint renderer raises an invalid-column
+error while editing those buffers. Diagnostics are rendered inline at the
+cursor without duplicating Neovim's default virtual text.
 
 | Key | Action |
 | --- | --- |
