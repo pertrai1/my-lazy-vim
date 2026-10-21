@@ -43,13 +43,16 @@ Git root lookup has a two-second limit. A standalone file can be checked
 outside Git, with its parent directory as the working directory.
 
 File checks refuse unsaved buffers. Delta refuses modified loaded buffers in
-the selected repository rather than silently checking stale disk contents.
+the selected repository rather than silently checking stale disk contents,
+including unwritten files beneath symlinked directories.
 Neither command saves files for you. Staged checks intentionally use the
 index even when a buffer is modified; they never stage anything. Run a new
 `:CodeScene` command after changing projects/files. Overseer's rerun action
 repeats the original command and root without repeating buffer preflight.
 
-Results appear in the existing Overseer task list/output. For file checks,
+Each command opens the new task's full output in a reusable pane in the current
+tab, preserving source focus. It does not depend on which task is selected in
+Overseer. Use `<leader>rv` to view previous tasks and their output. For file checks,
 recognized `Info: file:line: message` and `Warn: file:line: message` entries
 also populate a new quickfix list; unmatched output and stderr remain in the
 task output. This uses the errorformat supplied by `cs docs vim` in CLI

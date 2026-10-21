@@ -18,12 +18,35 @@ local function git_root(dir)
   end
 end
 
+-- New buffers may not exist yet. Resolve their closest existing ancestor so
+-- missing children below a directory symlink still belong to the real root.
+local function canonical_path(path)
+  local original = path
+  local missing = {}
+  while path do
+    local real = vim.uv.fs_realpath(path)
+    if real then
+      for i = #missing, 1, -1 do
+        real = vim.fs.joinpath(real, missing[i])
+      end
+      return vim.fs.normalize(real)
+    end
+    local parent = vim.fs.dirname(path)
+    if not parent or parent == path then
+      break
+    end
+    table.insert(missing, vim.fs.basename(path))
+    path = parent
+  end
+  return vim.fs.normalize(original)
+end
+
 local function modified_in(root)
-  local prefix = vim.fs.normalize(vim.uv.fs_realpath(root) or root):gsub("/+$", "") .. "/"
+  local prefix = canonical_path(root):gsub("/+$", "") .. "/"
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" and vim.bo[buf].modified then
       local name = vim.api.nvim_buf_get_name(buf)
-      local path = name ~= "" and vim.fs.normalize(vim.uv.fs_realpath(name) or name) or ""
+      local path = name ~= "" and canonical_path(name) or ""
       if (name == "" and buf == vim.api.nvim_get_current_buf()) or path:sub(1, #prefix) == prefix then
         return true
       end
@@ -100,6 +123,26 @@ function M.definition(scope)
   }
 end
 
+-- A task list may already be open without a preview, or still select an older
+-- task. Show this exact output independently, reusing only our own result pane.
+local function open_output(task)
+  local bufnr = task:get_bufnr()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local existing = vim.api.nvim_win_get_buf(win)
+    local previous = vim.w[win].codescene_task_id
+    -- Overseer replaces output buffers on restart but preserves the task ID.
+    if previous and vim.b[existing].overseer_task == previous then
+      vim.api.nvim_win_set_buf(win, bufnr)
+      vim.w[win].codescene_task_id = task.id
+      return
+    end
+  end
+  local current = vim.api.nvim_get_current_win()
+  task:open_output("horizontal")
+  vim.w.codescene_task_id = task.id
+  vim.api.nvim_set_current_win(current)
+end
+
 function M.run(scope)
   local definition, error = M.definition(scope)
   if not definition then
@@ -113,7 +156,7 @@ function M.run(scope)
     warn("The CLI could not start. Check that cs is executable and the project directory still exists.")
     return
   end
-  overseer.open({ direction = "bottom", enter = false })
+  open_output(task)
   return task
 end
 

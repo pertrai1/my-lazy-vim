@@ -210,7 +210,9 @@ or `:CodeScene staged` for the Git index. Tab completion lists the scopes.
 These commands reuse Overseer. Nothing runs at startup, on save, or as part
 of `Validation: all`, and nothing installs or authenticates automatically.
 
-The task list opens with the full CLI output, including authentication errors.
+A reusable output pane opens for the new check, including multiline authentication
+errors, without moving focus from the source buffer. Previous task output remains
+available in Overseer.
 File checks also put recognized findings in quickfix: use `:copen`, `]q`, and
 `[q`. Delta/staged output stays in Overseer, preserving improvements and
 explanations. No inline/LSP diagnostics are added.
@@ -538,8 +540,9 @@ LAZYVIM_TEST_PLUGINS="$HOME/.local/share/nvim/lazy" \
 The integration checks use temporary local projects and do not send prompts
 or start the OpenCode CLI. CodeScene tests use a local stub named `cs`, not
 the real service, credentials, or licensed analysis. They cover pinned Lazy
-command loading, quickfix parsing, raw errors, exit codes, cancellation,
-timeouts, and an executable disappearing before task startup.
+command loading, output-pane visibility/reuse, quickfix parsing, raw errors,
+exit codes, cancellation, timeouts, and an executable disappearing before task
+startup. Preflight checks include unwritten files beneath symlinked directories.
 
 Useful commands:
 

@@ -118,6 +118,49 @@ local function run()
     vim.fn.delete(root .. "-link")
   end)
 
+  test("unwritten current files beneath a directory symlink block delta but not staged", function()
+    assert(vim.uv.fs_symlink(root, root .. "-link", { dir = true }))
+    local unwritten = root .. "-link/nested package/not written.ts"
+    edit(unwritten)
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "const unsaved = true;" })
+    equal(nil, vim.uv.fs_stat(unwritten))
+    assert(vim.bo.modified)
+    equal({ cli, "delta", "--staged" }, assert(codescene.definition("staged")).cmd)
+    rejected("delta", "Save modified buffers")
+    vim.bo.modified = false
+    edit(source)
+    vim.fn.delete(root .. "-link")
+  end)
+
+  test("unwritten noncurrent files resolve symlinks through their nearest existing ancestor", function()
+    assert(vim.uv.fs_symlink(root, root .. "-link", { dir = true }))
+    local unwritten = root .. "-link/not created/nested/not written.ts"
+    local other = vim.fn.bufadd(unwritten)
+    vim.fn.bufload(other)
+    vim.api.nvim_buf_set_lines(other, 0, -1, false, { "const unsaved = true;" })
+    equal(nil, vim.uv.fs_stat(vim.fs.dirname(unwritten)))
+    equal(nil, vim.uv.fs_stat(unwritten))
+    assert(vim.bo[other].modified)
+    equal({ cli, "delta", "--staged" }, assert(codescene.definition("staged")).cmd)
+    rejected("delta", "Save modified buffers")
+    vim.bo[other].modified = false
+    vim.fn.delete(root .. "-link")
+  end)
+
+  test("unwritten buffers in an unrelated same-prefix root do not block delta", function()
+    assert(vim.uv.fs_symlink(root .. "-outside", root .. "-outside-link", { dir = true }))
+    local unwritten = root .. "-outside-link/not created/nested/not written.ts"
+    local outside = vim.fn.bufadd(unwritten)
+    vim.fn.bufload(outside)
+    vim.api.nvim_buf_set_lines(outside, 0, -1, false, { "const unrelated = true;" })
+    equal(nil, vim.uv.fs_stat(vim.fs.dirname(unwritten)))
+    assert(vim.bo[outside].modified)
+    equal({ cli, "delta" }, assert(codescene.definition("delta")).cmd)
+    equal({ cli, "delta", "--staged" }, assert(codescene.definition("staged")).cmd)
+    vim.bo[outside].modified = false
+    vim.fn.delete(root .. "-outside-link")
+  end)
+
   test("Lua reports unsupported rather than a misleading clean check", function()
     edit(file(root .. "/config.LUA"))
     rejected("file", "does not support Lua")
@@ -197,6 +240,7 @@ local ok, err = xpcall(run, debug.traceback)
 vim.env.PATH = original_path
 vim.cmd("cd " .. vim.fn.fnameescape(original_cwd))
 vim.fn.delete(root .. "-link")
+vim.fn.delete(root .. "-outside-link")
 for _, path in ipairs({ root, root .. "-outside", root .. "-worktree" }) do
   vim.fn.delete(path, "rf")
 end

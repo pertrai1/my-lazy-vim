@@ -37,7 +37,12 @@ const path = require('node:path');
 const mode = fs.readFileSync('mode', 'utf8').trim();
 fs.writeFileSync('called.json', JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }));
 if (mode === 'hang') setInterval(() => {}, 1000);
-else if (mode === 'auth') { console.error('Authentication required (fixture)'); process.exitCode = 1; }
+else if (mode === 'auth') {
+  console.error('Authentication required (fixture)');
+  console.error('This is multiline guidance, not a clickable finding.');
+  console.error('Use the official CLI authentication instructions (fixture).');
+  process.exitCode = 1;
+}
 else if (mode === 'error') { console.error('Unknown CLI option (fixture)'); process.exitCode = 2; }
 else if (mode === 'unsupported') console.log('Unsupported language (fixture)');
 else if (mode === 'clean') console.log('No Code Health issues (fixture)');
@@ -101,7 +106,7 @@ else {
   local overseer = require("overseer")
   local function launch(mode, scope)
     vim.fn.writefile({ mode }, root .. "/mode")
-    -- Opening the task list must not change the buffer used by the next command.
+    -- Opening output must not change the buffer used by the next command.
     assert(vim.api.nvim_buf_get_name(0) == source)
     local task = assert(codescene.run(scope))
     table.insert(tasks, task)
@@ -117,6 +122,81 @@ else {
     assert(task.status == expected, "Expected " .. expected .. ", got " .. task.status)
     return table.concat(vim.api.nvim_buf_get_lines(task:get_bufnr(), 0, -1, false), "\n")
   end
+
+  local function output_window(task)
+    assert(vim.api.nvim_buf_get_name(0) == source, "Output must not take source focus")
+    local windows = vim.fn.win_findbuf(task:get_bufnr())
+    assert(#windows > 0, "The new task's full output must be displayed, not only retained in a buffer")
+    return windows[1]
+  end
+
+  test("multiline authentication guidance opens even with an existing side task list", function()
+    overseer.open({ direction = "left", enter = false })
+    local task = launch("auth", "file")
+    local output = finish(task, "FAILURE")
+    assert(output:find("Use the official CLI authentication instructions", 1, true))
+    output_window(task)
+    assert(#vim.fn.getqflist() == 0)
+  end)
+  test("successive checks display the new task and reuse the output pane", function()
+    local first = launch("auth", "file")
+    finish(first, "FAILURE")
+    local win = output_window(first)
+    local count = #vim.api.nvim_tabpage_list_wins(0)
+    local second = launch("findings", "staged")
+    finish(second, "SUCCESS")
+    assert(output_window(second) == win, "Repeated checks should reuse the result pane")
+    assert(#vim.api.nvim_tabpage_list_wins(0) == count)
+  end)
+  test("restarting an Overseer task keeps its replacement output pane reusable", function()
+    local first = launch("clean", "file")
+    finish(first, "SUCCESS")
+    local win = output_window(first)
+    local count = #vim.api.nvim_tabpage_list_wins(0)
+    local original_buf = first:get_bufnr()
+    assert(first:restart())
+    finish(first, "SUCCESS")
+    assert(first:get_bufnr() ~= original_buf, "Pinned Overseer replaces output buffers on restart")
+    assert(output_window(first) == win)
+    local second = launch("auth", "file")
+    finish(second, "FAILURE")
+    assert(output_window(second) == win, "A restarted task's output pane must still be reused")
+    assert(#vim.api.nvim_tabpage_list_wins(0) == count)
+  end)
+  test("replacing or closing the output pane never overwrites an unrelated buffer", function()
+    local first = launch("clean", "file")
+    finish(first, "SUCCESS")
+    local old_win = output_window(first)
+    local unrelated = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_win_set_buf(old_win, unrelated)
+    local second = launch("clean", "file")
+    finish(second, "SUCCESS")
+    local new_win = output_window(second)
+    assert(new_win ~= old_win and vim.api.nvim_win_get_buf(old_win) == unrelated)
+    vim.api.nvim_win_close(old_win, true)
+    vim.api.nvim_win_close(new_win, true)
+    local third = launch("unsupported", "file")
+    finish(third, "SUCCESS")
+    output_window(third)
+  end)
+
+  test("a check in another tab leaves the previous tab's result pane intact", function()
+    local first = launch("clean", "file")
+    finish(first, "SUCCESS")
+    local first_win = output_window(first)
+    local first_tab = vim.api.nvim_get_current_tabpage()
+    vim.cmd.tabnew()
+    vim.cmd("edit " .. vim.fn.fnameescape(source))
+    local second_tab = vim.api.nvim_get_current_tabpage()
+    local second = launch("auth", "file")
+    finish(second, "FAILURE")
+    local second_win = output_window(second)
+    assert(vim.api.nvim_win_get_tabpage(second_win) == second_tab)
+    assert(vim.api.nvim_win_get_buf(first_win) == first:get_bufnr())
+    vim.cmd.tabclose()
+    assert(vim.api.nvim_get_current_tabpage() == first_tab)
+    assert(vim.api.nvim_win_get_buf(first_win) == first:get_bufnr())
+  end)
 
   test("official file format becomes quickfix while argv, stderr and project root are preserved", function()
     local task = launch("findings", "file")
