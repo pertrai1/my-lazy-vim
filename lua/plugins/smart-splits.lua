@@ -65,9 +65,12 @@ return {
       },
     },
     opts = {
-      at_edge = "stop",
-      default_amount = 5,
-      disable_multiplexer_nav_when_zoomed = true,
+      move = {
+        at_edge = "stop",
+      },
+      resize = {
+        amount = 5,
+      },
       multiplexer_integration = vim.env.TMUX and "tmux" or nil,
     },
   },
