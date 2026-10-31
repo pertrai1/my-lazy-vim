@@ -7,14 +7,19 @@ local function ask(ctx, title)
   local cli = require("sidekick.cli")
   local _, text = cli.render({ msg = ctx })
   if not text then
+    vim.notify("Sidekick: nothing to ask about (needs a saved file or a visual selection)", vim.log.levels.WARN)
     return
   end
   vim.ui.input({ prompt = title }, function(question)
     if not question or question == "" then
       return
     end
-    cli.send({ text = text, focus = true })
-    cli.send({ msg = question, submit = true })
+    -- One send, so a single CLI picker decides the destination for context and
+    -- question alike. The question is appended as literal text: passing it as
+    -- `msg` would parse braces (e.g. "why does {foo} fail?") as placeholders.
+    text[#text + 1] = { { "" } }
+    text[#text + 1] = { { question } }
+    cli.send({ text = text, submit = true, focus = true })
   end)
 end
 
@@ -79,7 +84,11 @@ return {
         explain = "Explain {this}",
         fix = "Can you fix {this}?",
         optimize = "How can {this} be optimized?",
-        review = "Can you review {file} for any issues or improvements?",
+        -- A visual selection reviews just that range; otherwise the whole file.
+        review = function(ctx)
+          return ctx.range and "Can you review {this} for any issues or improvements?"
+            or "Can you review {file} for any issues or improvements?"
+        end,
         tests = "Can you write tests for {this}?",
         refactor = "Suggest a refactor of {this} that simplifies it without changing behavior.",
         security = "Review {this} for security issues such as injection, unsafe input handling and secrets.",

@@ -26,6 +26,9 @@ map("n", "<leader>rc", "<cmd>source $MYVIMRC<cr>", { desc = "Reload config" })
 
 -- Select all with Ctrl+a
 -- <M-a>, not <C-a>: <C-a> stays free for dial.nvim's increment.
+-- Needs the terminal to send Option/Alt as Meta (macOS Terminal: Settings >
+-- Profiles > Keyboard > "Use Option as Meta key"; iTerm2: Profiles > Keys >
+-- Left Option key = Esc+).
 map("n", "<M-a>", "ggVG", { desc = "Select all" })
 map("i", "<M-a>", "<Esc>ggVG", { desc = "Select all" })
 map("v", "<M-a>", "<Esc>ggVG", { desc = "Select all" })
