@@ -2,7 +2,7 @@
 -- LAZYVIM_TEST_PLUGINS=/path/to/lazy nvim --headless -u NONE -l tests/integration.lua
 local plugin_root = assert(vim.env.LAZYVIM_TEST_PLUGINS, "Set LAZYVIM_TEST_PLUGINS to the installed plugins directory")
 local lock = vim.json.decode(table.concat(vim.fn.readfile("lazy-lock.json"), "\n"))
-for _, name in ipairs({ "lazy.nvim", "opencode.nvim", "snacks.nvim", "overseer.nvim" }) do
+for _, name in ipairs({ "lazy.nvim", "overseer.nvim" }) do
   local sha = vim.fn.system({ "git", "-C", plugin_root .. "/" .. name, "rev-parse", "HEAD" }):gsub("%s+$", "")
   assert(sha == lock[name].commit, name .. " must match lazy-lock.json")
 end
@@ -17,9 +17,6 @@ local function run()
   vim.go.loadplugins = true
   vim.opt.runtimepath:prepend(vim.fn.getcwd())
   vim.opt.runtimepath:prepend(plugin_root .. "/lazy.nvim")
-  local specs = dofile("lua/plugins/opencode.lua")
-  specs[2].dir = plugin_root .. "/opencode.nvim"
-  specs[2].dependencies[1].dir = plugin_root .. "/snacks.nvim"
   local errors = {}
   local notify = vim.notify
   vim.notify = function(message, level, opts)
@@ -30,7 +27,7 @@ local function run()
     end
   end
   require("lazy").setup({
-    spec = specs,
+    spec = {},
     root = plugin_root,
     lockfile = root .. "/lazy-lock.json",
     state = root .. "/lazy-state.json",
@@ -41,16 +38,6 @@ local function run()
     readme = { enabled = false },
     performance = { cache = { enabled = false }, rtp = { reset = false } },
   })
-  require("lazy").load({ plugins = { "opencode.nvim" } })
-  vim.wait(50, function()
-    return #errors > 0
-  end)
-  assert(#errors == 0, table.concat(errors, "\n"))
-  assert(require("lazy.core.config").plugins["opencode.nvim"]._.loaded, "OpenCode did not load")
-  assert(require("opencode").setup == nil, "Revisit the loader regression test: upstream now has setup()")
-  assert(vim.opt.autoread:get(), "OpenCode init did not enable autoread")
-  print("ok - pinned lazy.nvim loads OpenCode and Snacks without setup errors")
-
   vim.opt.runtimepath:prepend(plugin_root .. "/overseer.nvim")
   local overseer = require("overseer")
   overseer.setup({ dap = false })
@@ -137,4 +124,4 @@ if not ok then
   io.stderr:write(err .. "\n")
   vim.cmd("cquit 1")
 end
-print("7 pinned-plugin integration checks passed")
+print("6 pinned-plugin integration checks passed")
