@@ -21,8 +21,8 @@ vim.opt.undofile = true -- Save undo history to file
 
 -- Performance
 vim.opt.updatetime = 250 -- Faster CursorHold events (default 4000ms)
--- Give more time for <leader> mappings (LazyVim default is fast).
-vim.opt.timeoutlen = 1000
+-- Matches LazyVim's default; keeps which-key and chords responsive.
+vim.opt.timeoutlen = 300
 -- Search and substitution
 vim.opt.inccommand = "split" -- Live preview of substitutions in split
 

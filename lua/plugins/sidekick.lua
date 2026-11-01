@@ -1,5 +1,33 @@
 ---@type LazySpec
 -- NOTE: Sidekick AI - Copilot NES + AI CLI integration
+
+-- Ask a free-form question about `ctx` ({this}, {file}, ...). Context is
+-- rendered before the input opens because that discards the visual selection.
+local function ask(ctx, title)
+  local cli = require("sidekick.cli")
+  local _, text = cli.render({ msg = ctx })
+  if not text then
+    vim.notify("Sidekick: nothing to ask about (needs a saved file or a visual selection)", vim.log.levels.WARN)
+    return
+  end
+  vim.ui.input({ prompt = title }, function(question)
+    if not question or question == "" then
+      return
+    end
+    -- One send, so a single CLI picker decides the destination for context and
+    -- question alike. The question is appended as literal text: passing it as
+    -- `msg` would parse braces (e.g. "why does {foo} fail?") as placeholders.
+    text[#text + 1] = { { "" } }
+    text[#text + 1] = { { question } }
+    cli.send({ text = text, submit = true, focus = true })
+  end)
+end
+
+local function prompt(name)
+  return function()
+    require("sidekick.cli").send({ prompt = name, submit = true, focus = true })
+  end
+end
 return {
   "folke/sidekick.nvim",
   event = "VeryLazy",
@@ -19,7 +47,9 @@ return {
       watch = true,
       mux = {
         backend = "tmux",
-        enabled = true,
+        -- Disabled: Sidekick kept reattaching to a dead tmux session whose cwd
+        -- was gone, so tools failed with "working directory was deleted".
+        enabled = false,
         create = "terminal",
       },
       picker = "snacks",
@@ -38,18 +68,13 @@ return {
           stopinsert = { "<c-q>", "stopinsert", mode = "t", desc = "enter normal mode" },
         },
       },
+      -- The CLIs used day to day, each with its own keymap (<leader>ac/ax/ao).
+      -- Sidekick merges in its defaults, so the <leader>as picker filters to
+      -- installed tools instead.
       tools = {
         claude = {},
-        gemini = {},
-        aider = {},
         codex = {},
-        crush = {},
         opencode = {},
-        copilot = {},
-        grok = {},
-        qwen = {},
-        amazon_q = {},
-        cursor = {},
       },
       prompts = {
         changes = "Can you review my changes?",
@@ -59,8 +84,18 @@ return {
         explain = "Explain {this}",
         fix = "Can you fix {this}?",
         optimize = "How can {this} be optimized?",
-        review = "Can you review {file} for any issues or improvements?",
+        -- A visual selection reviews just that range; otherwise the whole file.
+        review = function(ctx)
+          return ctx.range and "Can you review {this} for any issues or improvements?"
+            or "Can you review {file} for any issues or improvements?"
+        end,
         tests = "Can you write tests for {this}?",
+        refactor = "Suggest a refactor of {this} that simplifies it without changing behavior.",
+        security = "Review {this} for security issues such as injection, unsafe input handling and secrets.",
+        types = "Can you improve the typing of {this}? Remove any/unknown where a precise type is possible.",
+        quickfix = "Help me work through this quickfix list:\n{quickfix}",
+        commit = "Look at my staged changes and write a conventional commit message.",
+        pr = "Look at the changes on this branch versus main and draft a pull request description.",
       },
     },
     copilot = {
@@ -140,20 +175,54 @@ return {
       end,
       mode = { "n", "x" },
       desc = "Sidekick Select Prompt",
-        },
+    },
+    {
+      "<leader>aq",
+      function()
+        ask("{this}", "Ask about this: ")
+      end,
+      mode = { "n", "x" },
+      desc = "Ask about selection / cursor",
+    },
+    {
+      "<leader>aQ",
+      function()
+        ask("{file}", "Ask about this file: ")
+      end,
+      desc = "Ask about file",
+    },
+    { "<leader>ae", prompt("explain"), mode = { "n", "x" }, desc = "Explain this" },
+    { "<leader>ar", prompt("review"), mode = { "n", "x" }, desc = "Review this" },
+    { "<leader>aR", prompt("refactor"), mode = { "n", "x" }, desc = "Suggest refactor" },
+    { "<leader>aF", prompt("fix"), mode = { "n", "x" }, desc = "Fix this" },
+    { "<leader>aT", prompt("tests"), mode = { "n", "x" }, desc = "Write tests" },
+    { "<leader>aD", prompt("diagnostics"), desc = "Fix buffer diagnostics" },
+    { "<leader>aE", prompt("diagnostics_all"), desc = "Fix all diagnostics" },
+    { "<leader>aS", prompt("security"), mode = { "n", "x" }, desc = "Security review" },
+    { "<leader>aC", prompt("changes"), desc = "Review my changes" },
+    { "<leader>aG", prompt("commit"), desc = "Write commit message" },
+    { "<leader>aP", prompt("pr"), desc = "Draft PR description" },
+    { "<leader>aK", prompt("quickfix"), desc = "Work through quickfix list" },
+    {
+      "<leader>ac",
+      function()
+        require("sidekick.cli").toggle({ name = "claude", focus = true })
+      end,
+      desc = "Sidekick Toggle Claude",
+    },
+    {
+      "<leader>ax",
+      function()
+        require("sidekick.cli").toggle({ name = "codex", focus = true })
+      end,
+      desc = "Sidekick Toggle Codex",
+    },
     {
       "<leader>ao",
       function()
         require("sidekick.cli").toggle({ name = "opencode", focus = true })
       end,
       desc = "Sidekick Toggle OpenCode",
-    },
-    {
-      "<leader>ac",
-      function()
-        require("sidekick.cli").toggle({ name = "codex", focus = true })
-      end,
-      desc = "Sidekick Toggle Codex",
     },
   },
   dependencies = {

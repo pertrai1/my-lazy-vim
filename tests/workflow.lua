@@ -134,49 +134,6 @@ local function run()
     equal({}, validation.templates(project(nil, { ["package.json"] = "invalid json" })))
   end)
 
-  test("OpenCode spec avoids lazy.nvim's implicit setup contract", function()
-    local specs = dofile("lua/plugins/opencode.lua")
-    local plugin = specs[2]
-    equal("NickvanDyke/opencode.nvim", plugin[1])
-    equal(nil, plugin.opts)
-    equal(nil, plugin.config)
-    vim.opt.autoread = false
-    plugin.init()
-    equal(true, vim.opt.autoread:get())
-
-    -- Verify existing callbacks without loading OpenCode or sending prompts.
-    local calls = {}
-    package.loaded.opencode = {
-      ask = function(prompt)
-        table.insert(calls, { "ask", prompt })
-      end,
-      prompt = function(prompt)
-        table.insert(calls, { "prompt", prompt })
-      end,
-      select = function()
-        table.insert(calls, { "select" })
-      end,
-    }
-    package.loaded["snacks.terminal"] = {
-      toggle = function(cmd, opts)
-        equal("opencode", cmd)
-        equal({ win = { position = "right", width = 80 } }, opts)
-        table.insert(calls, { "terminal" })
-      end,
-    }
-    for _, mapping in ipairs(plugin.keys) do
-      mapping[2]()
-    end
-    equal({
-      { "terminal" },
-      { "ask", "@this: " },
-      { "ask", "@buffer: " },
-      { "ask", "@this: " },
-      { "prompt", "Explain @this and its context" },
-      { "select" },
-    }, calls)
-  end)
-
   test("keeps intentional Neotest watch separate", function()
     local watched
     package.loaded.neotest = {

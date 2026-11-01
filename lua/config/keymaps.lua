@@ -25,9 +25,13 @@ map("v", "<C-s>", "<Esc><cmd>w<cr>gv", { desc = "Save" })
 map("n", "<leader>rc", "<cmd>source $MYVIMRC<cr>", { desc = "Reload config" })
 
 -- Select all with Ctrl+a
-map("n", "<C-a>", "ggVG", { desc = "Select all" })
-map("i", "<C-a>", "<Esc>ggVG", { desc = "Select all" })
-map("v", "<C-a>", "<Esc>ggVG", { desc = "Select all" })
+-- <M-a>, not <C-a>: <C-a> stays free for dial.nvim's increment.
+-- Needs the terminal to send Option/Alt as Meta (macOS Terminal: Settings >
+-- Profiles > Keyboard > "Use Option as Meta key"; iTerm2: Profiles > Keys >
+-- Left Option key = Esc+).
+map("n", "<M-a>", "ggVG", { desc = "Select all" })
+map("i", "<M-a>", "<Esc>ggVG", { desc = "Select all" })
+map("v", "<M-a>", "<Esc>ggVG", { desc = "Select all" })
 
 -- Shift+Alt+arrows: duplicate line or selection
 map("n", "<S-M-Down>", ":t.<CR>", { desc = "Duplicate line down" })

@@ -12,15 +12,21 @@
 require("config.jscpd").setup()
 
 -- Hide relative line numbers while inserting
+-- Only toggle in normal file buffers; terminals, pickers and prompts manage
+-- their own line numbers.
 vim.api.nvim_create_autocmd("InsertEnter", {
-  callback = function()
-    vim.opt_local.relativenumber = false
+  callback = function(ev)
+    if vim.bo[ev.buf].buftype == "" then
+      vim.opt_local.relativenumber = false
+    end
   end,
 })
 
 vim.api.nvim_create_autocmd("InsertLeave", {
-  callback = function()
-    vim.opt_local.relativenumber = true
+  callback = function(ev)
+    if vim.bo[ev.buf].buftype == "" then
+      vim.opt_local.relativenumber = true
+    end
   end,
 })
 

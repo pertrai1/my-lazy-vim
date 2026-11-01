@@ -17,7 +17,7 @@ forget a shortcut.
 - Project-aware Overseer validation pipelines for OpenSpec, lint, typecheck,
   tests, and agent verification tasks when a repository exposes them.
 - JavaScript/TypeScript and Python REPLs, plus operator-based code execution.
-- OpenCode for repository-aware AI agent workflows.
+- Sidekick for repository-aware AI agent workflows (Claude, Codex, OpenCode).
 - Private local inline completion through Minuet, llama.cpp, and Qwen Coder.
 - Snacks pickers and terminals, Yazi, Diffview, Harpoon file marks, Overseer
   tasks, enhanced quickfix, folding, refactoring, snippets, and structural
@@ -44,7 +44,7 @@ Useful optional tools:
 
 - [Yazi](https://yazi-rs.github.io/) for file management.
 - [lazygit](https://github.com/jesseduffield/lazygit) for LazyVim's Git UI.
-- [OpenCode v2](https://opencode.ai/) for the embedded AI agent.
+- [Sidekick](https://github.com/folke/sidekick.nvim) for embedded AI agent CLIs.
 - [llama.cpp](https://github.com/ggml-org/llama.cpp) for local inline
   completion.
 - A JDK 17 or newer for SonarQube for IDE; the language server is a JVM
@@ -382,31 +382,28 @@ buffers.
 
 The AI tools have deliberately separate responsibilities:
 
-- OpenCode is the interactive agent for explanations, repository exploration,
-  implementation, debugging, and multi-file work.
+- Sidekick hosts the interactive agents (Claude, Codex, OpenCode) for
+  explanations, repository exploration, implementation, debugging, and
+  multi-file work.
 - Minuet provides small, manually requested inline completions.
 - llama.cpp runs the inline model locally, so source code does not need to be
   sent to a completion service.
 
-### OpenCode
+### Sidekick
 
-Install and authenticate the OpenCode v2 CLI before using the embedded
-interface. The Neovim integration tracks the plugin's `main` branch, which
-supports OpenCode v2.
-Provider and Codex authentication are managed by OpenCode rather than this
-Neovim configuration.
+Sidekick hosts the Claude, Codex, and OpenCode CLIs in a right-hand terminal.
+Install and authenticate each CLI separately; authentication is managed by the
+CLI rather than this Neovim configuration.
 
 | Key | Action |
 | --- | --- |
-| `<leader>ot` | Toggle the OpenCode TUI in a right-hand terminal |
-| `<leader>oa` | Ask about the cursor or visual selection |
-| `<leader>o+` | Open Ask with the current buffer or selection as context |
-| `<leader>oe` | Send an explanation prompt about the current code |
-| `<leader>os` | Select an OpenCode prompt or registered command |
-
-OpenCode v2's Neovim API can send prompts and run registered commands, but it
-does not expose controls for creating sessions, appending to the TUI's prompt,
-or scrolling its messages. Use the OpenCode TUI (`<leader>ot`) for those actions.
+| `<leader>ac` | Toggle Claude |
+| `<leader>ax` | Toggle Codex |
+| `<leader>ao` | Toggle OpenCode |
+| `<leader>aa` | Toggle the last-used CLI |
+| `<leader>as` | Select an installed CLI |
+| `<leader>at` / `<leader>af` / `<leader>av` | Send this, the file, or the selection |
+| `<leader>ap` | Select a prompt |
 
 ### Local inline completion
 
