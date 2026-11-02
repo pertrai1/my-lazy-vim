@@ -1,6 +1,6 @@
 # Code quality tooling
 
-Reference for the CodeScene, SonarQube, coverage, and duplication setup: which files a
+Reference for the Fallow, CodeScene, SonarQube, coverage, and duplication setup: which files a
 repository needs, where credentials live, and why some of it is built the way
 it is. The keymaps are in [README.md](README.md).
 
@@ -15,6 +15,31 @@ it is. The keymaps are in [README.md](README.md).
 
 Nothing here is configured per repository inside this Neovim configuration.
 Each repository carries its own settings so the same setup works everywhere.
+
+## Fallow language server
+
+`lua/plugins/fallow.lua` registers Fallow through LazyVim's LSP server options.
+LazyVim calls Neovim's `vim.lsp.config` and `vim.lsp.enable`; Mason management
+is disabled because `fallow-lsp` comes from `npm install -g fallow`.
+
+The server attaches to JavaScript, TypeScript, JSX, and TSX buffers. Root
+markers follow the upstream priority: `.fallowrc.json`, `package.json`, then
+`.git`. Analysis runs on attachment and diagnostics refresh on save.
+Findings use the existing diagnostic navigation (`]d` / `[d`), hover (`K`),
+and code actions (`<leader>ca`).
+
+The integration keeps Fallow's default issue settings, including circular
+dependencies. Security candidates and component health hints require opt-in
+rules in each project's Fallow configuration. To hide an issue type only in
+the editor, add `init_options.issueTypes` to the server options, for example
+`["circular-dependencies"] = false`. Optional `changedSince` and `prewarm`
+initialization settings are left unset.
+
+If Neovim cannot find the binary, check `:echo exepath('fallow-lsp')`. Start
+Neovim from an environment with Fallow on `PATH`, or set `cmd` to its absolute
+path in `lua/plugins/fallow.lua`.
+
+Reference: [Fallow's Neovim integration](https://fallow.tools/docs/integrations/neovim/).
 
 ## CodeScene manual checks
 

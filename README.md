@@ -203,6 +203,28 @@ to each tool's language support. Project-specific settings live in the
 repository itself rather than in this configuration. See
 [CODE-QUALITY.md](CODE-QUALITY.md) for setup steps and design notes.
 
+### Fallow
+
+Fallow starts automatically for JavaScript, TypeScript, JSX, and TSX projects.
+It reports unused code, duplication, circular dependencies, and import issues
+through the existing LSP diagnostics, hover, and code actions.
+
+Install the language server separately and make it available on Neovim's `PATH`:
+
+```bash
+npm install -g fallow
+fallow-lsp --version
+```
+
+Restart Neovim after setup, open a JavaScript or TypeScript project, and run
+`:checkhealth vim.lsp`. Confirm attachment with:
+
+```vim
+:lua vim.print(vim.lsp.get_clients({ name = "fallow", bufnr = 0 }))
+```
+
+See [Fallow setup](CODE-QUALITY.md#fallow-language-server) for configuration details.
+
 ### CodeScene (optional, manual)
 
 Run `:CodeScene` or `:CodeScene file` to check the saved current file,
