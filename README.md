@@ -54,6 +54,8 @@ Useful optional tools:
 - A Rust toolchain to build SnipRun on macOS.
 - The [CodeScene CLI](https://codescene.io/docs/cli/index.html) (`cs`) and its
   own configured authentication/license, only if you want manual Code Health checks.
+- [Fallow](https://fallow.tools/) (`npm install -g fallow`) for JavaScript/TypeScript
+  diagnostics; see [Fallow setup](CODE-QUALITY.md#fallow-language-server).
 
 Mason installs most language servers, formatters, linters, and debug adapters
 when their corresponding LazyVim extras are active.
